@@ -29,6 +29,14 @@
   --color-job-fishing: oklch(0.65 0.18 220);
   --color-job-farming: oklch(0.70 0.18 95);
 
+  /* Item type colors */
+  --color-item-currency: oklch(0.75 0.15 85);
+  --color-item-container: oklch(0.62 0.12 55);
+  --color-item-gathered: oklch(0.65 0.20 145);
+  --color-item-refined: oklch(0.62 0.18 270);
+  --color-item-sellable: oklch(0.65 0.18 330);
+  --color-item-consumable: oklch(0.60 0.22 25);
+
   /* Tier colors (display T1-T6, data 0-5) */
   --color-tier-1: oklch(0.55 0.03 285);
   --color-tier-2: oklch(0.65 0.20 145);
