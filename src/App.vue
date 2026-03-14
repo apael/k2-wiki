@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { BookOpen, Compass } from 'lucide-vue-next'
+import { BookOpen, Compass, Package } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 
 const route = useRoute()
 
 const navItems = [
   { label: 'Beastiary', to: '/', icon: BookOpen },
+  { label: 'Items', to: '/items', icon: Package },
   { label: 'Expeditions', to: '/expeditions', icon: Compass },
 ]
 
@@ -49,7 +50,7 @@ function isActive(path: string) {
 
     <nav
       class="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/94 px-3 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] pt-2 backdrop-blur-xl md:hidden">
-      <div class="mx-auto grid max-w-md grid-cols-2 gap-2">
+      <div class="mx-auto grid max-w-md grid-cols-3 gap-2">
         <RouterLink v-for="item in navItems" :key="item.to" :to="item.to" :class="cn(
           'focus-ring inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition',
           isActive(item.to)
