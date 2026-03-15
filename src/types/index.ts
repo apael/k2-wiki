@@ -112,6 +112,17 @@ export interface JobActivitySource {
   max: number
 }
 
+export type PlannerMethodKind =
+  | 'craft'
+  | 'gather'
+  | 'garden'
+  | 'container'
+  | 'expedition'
+  | 'buy'
+  | 'unknown'
+  | 'cycle'
+  | 'stocked'
+
 export interface RecipeUsage {
   outputItemId: string
   outputItemName: string
