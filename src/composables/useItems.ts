@@ -37,6 +37,7 @@ for (const job of jobsData) {
         jobId: job.id,
         activityName: activity.name,
         levelRequirement: activity.levelRequirement,
+        duration: activity.duration,
         chance: out.chance,
         min: out.min,
         max: out.max,
