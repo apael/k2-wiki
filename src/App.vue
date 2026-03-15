@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { BookOpen, Compass, GitBranch, Package } from 'lucide-vue-next'
+import { BookOpen, Compass, GitBranch, Github, Package } from 'lucide-vue-next'
+import SteamIcon from '@/components/icons/SteamIcon.vue'
 import { cn } from '@/lib/utils'
 
 const route = useRoute()
@@ -42,6 +43,27 @@ function isActive(path: string) {
             <span>{{ item.label }}</span>
           </RouterLink>
         </nav>
+
+        <div class="flex items-center gap-1">
+          <a
+            href="https://github.com/ardelato/k2-wiki"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub repository"
+            class="focus-ring rounded-lg p-2 text-muted-foreground transition hover:text-foreground"
+          >
+            <Github class="size-5" />
+          </a>
+          <a
+            href="https://store.steampowered.com/app/2834700/Koltera_2/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Koltera 2 on Steam"
+            class="focus-ring rounded-lg p-2 text-muted-foreground transition hover:text-foreground"
+          >
+            <SteamIcon class="size-5" />
+          </a>
+        </div>
       </div>
     </header>
 
