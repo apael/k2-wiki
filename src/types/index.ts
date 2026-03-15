@@ -106,6 +106,7 @@ export interface JobActivitySource {
   jobId: string
   activityName: string
   levelRequirement: number
+  duration: number
   chance: number
   min: number
   max: number
