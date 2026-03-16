@@ -29,7 +29,10 @@ function isActive(path: string) {
       <div class="mx-auto flex h-[var(--header-height)] max-w-app items-center justify-between gap-5 px-4 sm:px-6">
         <RouterLink to="/" class="focus-ring inline-flex items-center gap-3 rounded-lg px-2 py-1.5 text-foreground">
           <span class="leading-tight">
-            <span class="block text-sm font-semibold tracking-wide text-muted-foreground">Koltera 2</span>
+            <span class="flex items-center gap-1.5 text-sm font-semibold tracking-wide text-muted-foreground">
+              Koltera 2
+              <span class="rounded-full bg-primary px-1.5 py-0.5 text-[0.625rem] font-semibold leading-none text-primary-foreground" title="Content is based on this game version">v1.7</span>
+            </span>
             <span class="block text-lg font-extrabold text-foreground">Wiki</span>
           </span>
         </RouterLink>
