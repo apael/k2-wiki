@@ -31,5 +31,10 @@ export const router = createRouter({
       name: 'expeditions',
       component: () => import('../views/ExpeditionsView.vue'),
     },
+    {
+      path: '/collection',
+      name: 'collection',
+      component: () => import('../views/CollectionView.vue'),
+    },
   ],
 })
