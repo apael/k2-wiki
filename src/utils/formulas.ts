@@ -1,4 +1,6 @@
 import type { Creature, Expedition, Biome, CreatureStats, ExpeditionStatKey } from '@/types'
+import expeditionsData from '@/data/expeditions.json'
+import biomesData from '@/data/biomes.json'
 
 // Consolidated stat labels & abbreviations (creature and expedition stats share the same keys)
 export const statLabels: Record<keyof CreatureStats, string> = {
@@ -159,6 +161,65 @@ export function levelFromXp(xp: number): number {
     return level - 1
   }
   return Math.max(1, level)
+}
+
+export interface BestExpeditionEntry {
+  expedition: Expedition
+  score: number
+  biomeName: string
+  traitMatch: boolean
+  biomeStatus: 'advantage' | 'disadvantage' | 'neutral'
+  statAlignment: number
+}
+
+export function getBestExpeditionsForCreature(
+  creature: Creature,
+  limit: number = 5
+): BestExpeditionEntry[] {
+  const expeditions = expeditionsData as Expedition[]
+  const biomes = biomesData as Biome[]
+  const biomeMap = new Map(biomes.map(b => [b.id, b]))
+
+  // Normalize creature stats to proportions (sum to 1)
+  const statKeys: (keyof CreatureStats)[] = ['power', 'grit', 'agility', 'smarts', 'looting', 'luck']
+  const statTotal = statKeys.reduce((sum, k) => sum + creature.stats[k], 0)
+  const creatureProportions = statKeys.map(k => statTotal > 0 ? creature.stats[k] / statTotal : 0)
+
+  return expeditions
+    .map(expedition => {
+      const biome = biomeMap.get(expedition.biome)
+      const traitMatch = creature.trait === expedition.trait
+
+      // Stat alignment: dot product of creature stat proportions and expedition weights
+      const weights = statKeys.map(k => expedition.statWeights[k])
+      const weightTotal = weights.reduce((sum, w) => sum + w, 0)
+      const normalizedWeights = weights.map(w => weightTotal > 0 ? w / weightTotal : 0)
+      const statAlignment = creatureProportions.reduce((sum, p, i) => sum + p * normalizedWeights[i], 0)
+
+      // Biome status
+      let biomeStatus: 'advantage' | 'disadvantage' | 'neutral' = 'neutral'
+      let biomeScore = 1.0
+      if (biome) {
+        const mult = biomeMultiplier(creature, biome)
+        biomeScore = mult
+        if (mult > 1) biomeStatus = 'advantage'
+        else if (mult < 1) biomeStatus = 'disadvantage'
+      }
+
+      // Combined score: stat alignment * biome * trait
+      const score = statAlignment * biomeScore * (traitMatch ? 1.5 : 1.0)
+
+      return {
+        expedition,
+        score: Math.round(score * 100),
+        biomeName: biome?.name ?? expedition.biome,
+        traitMatch,
+        biomeStatus,
+        statAlignment: Math.round(statAlignment * 100),
+      }
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
 }
 
 export function getRecommendedCreatures(
