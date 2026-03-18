@@ -225,6 +225,11 @@ export interface PlannerSchedule {
   completionTimeByNode: Record<string, number>
 }
 
+export interface CreatureCollectionEntry {
+  owned: boolean
+  level: number // 1-120
+}
+
 export type CreatureStatKey = keyof CreatureStats
 export type ExpeditionStatKey = keyof ExpeditionStatWeights
 export type JobKey = keyof Jobs

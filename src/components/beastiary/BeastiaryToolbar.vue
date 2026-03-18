@@ -11,6 +11,7 @@ const props = defineProps<{
   traitFilter: string | 'all'
   jobFilter: string | 'all'
   viewMode: 'grid' | 'table'
+  ownedFilter: 'all' | 'owned' | 'unowned'
   resultCount: number
   traitOptions: string[]
   jobOptions: string[]
@@ -23,6 +24,7 @@ const emit = defineEmits<{
   'update:traitFilter': [value: string | 'all']
   'update:jobFilter': [value: string | 'all']
   'update:viewMode': [value: 'grid' | 'table']
+  'update:ownedFilter': [value: 'all' | 'owned' | 'unowned']
 }>()
 
 const typeOptions: Array<ElementType | 'all'> = ['all', 'Fire', 'Water', 'Wind', 'Earth']
@@ -179,6 +181,22 @@ const typeDotColor: Record<ElementType, string> = {
           @click="emit('update:traitFilter', trait)"
         >
           {{ toTitleCase(trait) }}
+        </button>
+      </div>
+
+      <!-- Summoned filter -->
+      <div class="flex flex-wrap items-center gap-2" role="radiogroup" aria-label="Filter by summoned">
+        <span class="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Summoned</span>
+        <button
+          v-for="option in (['all', 'owned', 'unowned'] as const)"
+          :key="option"
+          role="radio"
+          :aria-checked="props.ownedFilter === option"
+          class="pill focus-ring"
+          :class="props.ownedFilter === option ? 'pill-active' : ''"
+          @click="emit('update:ownedFilter', option)"
+        >
+          {{ option === 'all' ? 'All' : option === 'owned' ? 'Summoned' : 'Not Summoned' }}
         </button>
 
         <div class="ml-auto rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-semibold text-muted-foreground" aria-live="polite">

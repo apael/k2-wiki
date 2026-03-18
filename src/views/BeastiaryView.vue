@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import { X } from 'lucide-vue-next'
+import { Check, Minus, Plus, X } from 'lucide-vue-next'
 import { useCreatures } from '@/composables/useCreatures'
+import { useCreatureCollection } from '@/composables/useCreatureCollection'
 import type { Creature, CreatureStats, Jobs } from '@/types'
 import { getCreatureImage } from '@/utils/creatureImages'
 import { jobColors, jobLabels, statLabels } from '@/utils/formulas'
@@ -23,6 +24,36 @@ const {
   allJobs,
 } = useCreatures()
 
+const { isOwned, getLevel, toggleOwned, setLevel } = useCreatureCollection()
+
+const ownedFilter = ref<'all' | 'owned' | 'unowned'>('all')
+
+const displayCreatures = computed(() => {
+  if (ownedFilter.value === 'all') return filteredCreatures.value
+  return filteredCreatures.value.filter(c =>
+    ownedFilter.value === 'owned' ? isOwned(c.id) : !isOwned(c.id)
+  )
+})
+
+function clampCollectionLevel(level: number): number {
+  if (Number.isNaN(level)) return 1
+  return Math.max(1, Math.min(120, Math.round(level)))
+}
+
+function stepCollectionLevel(id: string, delta: number) {
+  setLevel(id, clampCollectionLevel(getLevel(id) + delta))
+}
+
+function normalizeCollectionLevelOnBlur(id: string, event: FocusEvent) {
+  const target = event.target as HTMLInputElement
+  if (!target.value.trim()) {
+    setLevel(id, getLevel(id))
+    return
+  }
+  const parsed = Number(target.value)
+  setLevel(id, clampCollectionLevel(parsed))
+}
+
 const viewMode = ref<'grid' | 'table'>('grid')
 const selectedCreature = ref<Creature | null>(null)
 
@@ -36,7 +67,7 @@ const jobEntries = computed(() => Object.entries(jobLabels) as [keyof Jobs, stri
 const statEntries = computed(() => Object.entries(statLabels) as [keyof CreatureStats, string][])
 
 const sortedCreatures = computed(() => {
-  const list = [...filteredCreatures.value]
+  const list = [...displayCreatures.value]
   list.sort((a, b) => {
     let result = 0
 
@@ -84,6 +115,21 @@ function statHighlight(creature: Creature, statKey: keyof CreatureStats): string
   return 'text-foreground border-border bg-muted/35'
 }
 
+const selectedCreatureStats = computed<CreatureStats | undefined>(() => {
+  if (!selectedCreature.value) return undefined
+  const level = getLevel(selectedCreature.value.id)
+  if (level <= 1) return undefined
+  const base = selectedCreature.value.stats
+  return {
+    power: base.power * level,
+    grit: base.grit * level,
+    agility: base.agility * level,
+    smarts: base.smarts * level,
+    looting: base.looting * level,
+    luck: base.luck * level,
+  }
+})
+
 const maxJobLevel = 10
 </script>
 
@@ -96,7 +142,8 @@ const maxJobLevel = 10
       v-model:trait-filter="traitFilter"
       v-model:job-filter="jobFilter"
       v-model:view-mode="viewMode"
-      :result-count="filteredCreatures.length"
+      v-model:owned-filter="ownedFilter"
+      :result-count="displayCreatures.length"
       :trait-options="allTraits"
       :job-options="allJobs"
     />
@@ -106,7 +153,7 @@ const maxJobLevel = 10
         <div v-if="viewMode === 'grid'" class="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3">
           <!-- Creature Card -->
           <article
-            v-for="creature in filteredCreatures"
+            v-for="creature in displayCreatures"
             :key="creature.id"
             class="surface-card group relative cursor-pointer overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:border-accent/45 hover:shadow-glow"
             :class="selectedCreature?.id === creature.id ? 'ring-2 ring-primary/60 border-primary/40' : ''"
@@ -136,6 +183,13 @@ const maxJobLevel = 10
                   <!-- Tier badge overlay -->
                   <span class="absolute -right-1 -top-1 rounded-md border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] font-bold text-muted-foreground shadow-sm">
                     T{{ creature.tier + 1 }}
+                  </span>
+                  <!-- Summoned indicator -->
+                  <span
+                    v-if="isOwned(creature.id)"
+                    class="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
+                  >
+                    <Check class="size-3" />
                   </span>
                 </div>
 
@@ -373,11 +427,68 @@ const maxJobLevel = 10
               </p>
             </div>
 
+            <!-- Collection -->
+            <section class="border-t border-border/60 pt-4">
+              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Collection</h3>
+              <div class="space-y-3">
+                <label class="flex cursor-pointer items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+                  <span class="text-sm font-medium text-foreground">Summoned</span>
+                  <button
+                    role="switch"
+                    :aria-checked="isOwned(selectedCreature.id)"
+                    class="focus-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors"
+                    :class="isOwned(selectedCreature.id) ? 'bg-primary' : 'bg-muted'"
+                    @click="toggleOwned(selectedCreature.id)"
+                  >
+                    <span
+                      class="inline-block size-4 rounded-full bg-white shadow-sm transition-transform"
+                      :class="isOwned(selectedCreature.id) ? 'translate-x-6' : 'translate-x-1'"
+                    />
+                  </button>
+                </label>
+                <div v-if="isOwned(selectedCreature.id)" class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+                  <span class="text-sm font-medium text-foreground">Level</span>
+                  <div class="ml-auto inline-flex items-center overflow-hidden rounded-md border border-input bg-background/85">
+                    <button
+                      class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                      :disabled="getLevel(selectedCreature.id) <= 1"
+                      aria-label="Decrease creature level"
+                      @click="stepCollectionLevel(selectedCreature.id, -1)"
+                    >
+                      <Minus class="size-3" />
+                    </button>
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      pattern="[0-9]*"
+                      class="focus-ring h-7 w-11 border-x border-input bg-transparent text-center text-xs font-mono"
+                      :value="getLevel(selectedCreature.id)"
+                      aria-label="Creature level"
+                      @blur="normalizeCollectionLevelOnBlur(selectedCreature.id, $event)"
+                    />
+                    <button
+                      class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                      :disabled="getLevel(selectedCreature.id) >= 120"
+                      aria-label="Increase creature level"
+                      @click="stepCollectionLevel(selectedCreature.id, 1)"
+                    >
+                      <Plus class="size-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <!-- Stats with Radar Chart -->
             <section class="border-t border-border/60 pt-4">
-              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Stats</h3>
+              <div class="mb-3 flex items-baseline justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Stats</h3>
+                <span v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground">
+                  LVL {{ getLevel(selectedCreature.id) }}
+                </span>
+              </div>
               <div class="flex justify-center">
-                <StatRadarChart :creature="selectedCreature" :size="180" />
+                <StatRadarChart :creature="selectedCreature" :stats-override="selectedCreatureStats" :size="180" />
               </div>
               <div class="mt-3 grid grid-cols-3 gap-2">
                 <div
@@ -386,7 +497,8 @@ const maxJobLevel = 10
                   class="rounded-lg border px-2 py-2 text-center transition-colors"
                   :class="statHighlight(selectedCreature, statKey)"
                 >
-                  <p class="font-mono text-xs">{{ selectedCreature.stats[statKey] }}</p>
+                  <p class="font-mono text-xs">{{ (selectedCreatureStats ?? selectedCreature.stats)[statKey] }}</p>
+                  <p v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground/60">(BASE {{ selectedCreature.stats[statKey] }})</p>
                   <p class="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{{ statLabel }}</p>
                 </div>
               </div>
@@ -483,11 +595,68 @@ const maxJobLevel = 10
               <p class="text-sm text-muted-foreground">{{ selectedCreature.description }}</p>
             </div>
 
+            <!-- Collection -->
+            <section class="border-t border-border/60 pt-4">
+              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Collection</h3>
+              <div class="space-y-3">
+                <label class="flex cursor-pointer items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+                  <span class="text-sm font-medium text-foreground">Summoned</span>
+                  <button
+                    role="switch"
+                    :aria-checked="isOwned(selectedCreature.id)"
+                    class="focus-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors"
+                    :class="isOwned(selectedCreature.id) ? 'bg-primary' : 'bg-muted'"
+                    @click="toggleOwned(selectedCreature.id)"
+                  >
+                    <span
+                      class="inline-block size-4 rounded-full bg-white shadow-sm transition-transform"
+                      :class="isOwned(selectedCreature.id) ? 'translate-x-6' : 'translate-x-1'"
+                    />
+                  </button>
+                </label>
+                <div v-if="isOwned(selectedCreature.id)" class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+                  <span class="text-sm font-medium text-foreground">Level</span>
+                  <div class="ml-auto inline-flex items-center overflow-hidden rounded-md border border-input bg-background/85">
+                    <button
+                      class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                      :disabled="getLevel(selectedCreature.id) <= 1"
+                      aria-label="Decrease creature level"
+                      @click="stepCollectionLevel(selectedCreature.id, -1)"
+                    >
+                      <Minus class="size-3" />
+                    </button>
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      pattern="[0-9]*"
+                      class="focus-ring h-7 w-11 border-x border-input bg-transparent text-center text-xs font-mono"
+                      :value="getLevel(selectedCreature.id)"
+                      aria-label="Creature level"
+                      @blur="normalizeCollectionLevelOnBlur(selectedCreature.id, $event)"
+                    />
+                    <button
+                      class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                      :disabled="getLevel(selectedCreature.id) >= 120"
+                      aria-label="Increase creature level"
+                      @click="stepCollectionLevel(selectedCreature.id, 1)"
+                    >
+                      <Plus class="size-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <!-- Stats with Radar Chart -->
             <section class="border-t border-border/60 pt-4">
-              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Stats</h3>
+              <div class="mb-3 flex items-baseline justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Stats</h3>
+                <span v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground">
+                  LVL {{ getLevel(selectedCreature.id) }}
+                </span>
+              </div>
               <div class="flex justify-center">
-                <StatRadarChart :creature="selectedCreature" :size="160" />
+                <StatRadarChart :creature="selectedCreature" :stats-override="selectedCreatureStats" :size="160" />
               </div>
               <div class="mt-3 grid grid-cols-3 gap-2">
                 <div
@@ -496,7 +665,8 @@ const maxJobLevel = 10
                   class="rounded-lg border px-2 py-2 text-center transition-colors"
                   :class="statHighlight(selectedCreature, statKey)"
                 >
-                  <p class="font-mono text-xs">{{ selectedCreature.stats[statKey] }}</p>
+                  <p class="font-mono text-xs">{{ (selectedCreatureStats ?? selectedCreature.stats)[statKey] }}</p>
+                  <p v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground/60">(BASE {{ selectedCreature.stats[statKey] }})</p>
                   <p class="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{{ statLabel }}</p>
                 </div>
               </div>
