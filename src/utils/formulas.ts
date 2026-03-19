@@ -104,7 +104,7 @@ export function calculateDuration(
   tier: number
 ): number {
   const minSeconds = 300
-  const maxSeconds = 7200
+  const maxSeconds = 3600
   const difficultyRating = calculateDifficultyRating(expedition, tier)
 
   if (partyScore <= 0) return maxSeconds
