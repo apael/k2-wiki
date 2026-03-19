@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import { Check, Compass, Info, Minus, Plus, Target, X } from 'lucide-vue-next'
@@ -66,6 +66,14 @@ const mobileSection = computed<MobileSection>({
   },
 })
 
+onMounted(() => {
+  const expeditionId = route.query.expedition
+  if (typeof expeditionId === 'string') {
+    const match = filteredExpeditions.value.find(e => e.id === expeditionId)
+    if (match) selectExpedition(match)
+  }
+})
+
 watch(selectedExpedition, (exp) => {
   if (exp && !isDesktop.value && mobileSection.value === 'list') {
     mobileSection.value = 'details'
@@ -108,12 +116,15 @@ const filteredRecommended = computed(() => {
   })
 })
 
-// Auto-fill creature levels from collection for entries still at default (1)
+// Auto-fill creature levels from collection (once per creature, so manual edits aren't overwritten)
+const autoFilledCreatures = new Set<string>()
 watchEffect(() => {
   const levels = collectionLevels.value
   for (const [id, level] of Object.entries(levels)) {
+    if (autoFilledCreatures.has(id)) continue
     const rec = recommendedCreatures.value.find(r => r.creature.id === id)
     if (rec && rec.level === 1) {
+      autoFilledCreatures.add(id)
       updateCreatureLevel(id, level)
     }
   }

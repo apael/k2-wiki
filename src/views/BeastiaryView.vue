@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useMediaQuery } from '@vueuse/core'
+import { computed, ref, watch } from 'vue'
 import { Check, Minus, Plus, X } from 'lucide-vue-next'
 import { useCreatures } from '@/composables/useCreatures'
 import { useCreatureCollection } from '@/composables/useCreatureCollection'
 import type { Creature, CreatureStats, Jobs } from '@/types'
 import { getCreatureImage } from '@/utils/creatureImages'
-import { jobColors, jobLabels, statLabels } from '@/utils/formulas'
+import { jobColors, jobLabels, statLabels, getBestExpeditionsForCreature } from '@/utils/formulas'
 import { toTitleCase, typeColor, typeColorVar } from '@/utils/format'
 import { getItemImage } from '@/utils/itemImages'
 import StatRadarChart from '@/components/beastiary/StatRadarChart.vue'
@@ -24,15 +23,49 @@ const {
   allJobs,
 } = useCreatures()
 
-const { isOwned, getLevel, toggleOwned, setLevel } = useCreatureCollection()
+const { isOwned, getLevel, toggleOwned, setLevel, ownedCreatureIds } = useCreatureCollection()
 
 const ownedFilter = ref<'all' | 'owned' | 'unowned'>('all')
+const editing = ref(false)
+const bulkLevel = ref(1)
+
+const ownedCount = computed(() => ownedCreatureIds.value.size)
+
+function selectAll() {
+  for (const c of displayCreatures.value) {
+    if (!isOwned(c.id)) toggleOwned(c.id)
+  }
+}
+
+function deselectAll() {
+  for (const c of displayCreatures.value) {
+    if (isOwned(c.id)) toggleOwned(c.id)
+  }
+}
+
+function applyBulkLevel() {
+  const level = clampCollectionLevel(bulkLevel.value)
+  for (const c of displayCreatures.value) {
+    if (isOwned(c.id)) setLevel(c.id, level)
+  }
+}
 
 const displayCreatures = computed(() => {
   if (ownedFilter.value === 'all') return filteredCreatures.value
   return filteredCreatures.value.filter(c =>
     ownedFilter.value === 'owned' ? isOwned(c.id) : !isOwned(c.id)
   )
+})
+
+const groupedByTier = computed(() => {
+  const groups: Record<number, typeof displayCreatures.value> = {}
+  for (const c of displayCreatures.value) {
+    if (!groups[c.tier]) groups[c.tier] = []
+    groups[c.tier].push(c)
+  }
+  return Object.entries(groups)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([tier, creatures]) => ({ tier: Number(tier), creatures }))
 })
 
 function clampCollectionLevel(level: number): number {
@@ -61,7 +94,11 @@ type SortKey = 'name' | 'tier' | 'type' | 'trait' | 'jobTotal' | keyof Jobs
 const tableSortKey = ref<SortKey>('tier')
 const tableSortDirection = ref<'asc' | 'desc'>('asc')
 
-const isMobile = useMediaQuery('(max-width: 1279px)')
+const panelOpen = ref(false)
+
+watch(selectedCreature, (val) => {
+  if (val) panelOpen.value = true
+})
 
 const jobEntries = computed(() => Object.entries(jobLabels) as [keyof Jobs, string][])
 const statEntries = computed(() => Object.entries(statLabels) as [keyof CreatureStats, string][])
@@ -102,6 +139,7 @@ function selectCreature(creature: Creature) {
 }
 
 function closeDetail() {
+  panelOpen.value = false
   selectedCreature.value = null
 }
 
@@ -130,116 +168,120 @@ const selectedCreatureStats = computed<CreatureStats | undefined>(() => {
   }
 })
 
+const bestExpeditions = computed(() => {
+  if (!selectedCreature.value) return []
+  return getBestExpeditionsForCreature(selectedCreature.value)
+})
+
 const maxJobLevel = 10
 </script>
 
 <template>
   <section class="space-y-5 lg:space-y-6">
-    <BeastiaryToolbar
-      v-model:search-query="searchQuery"
-      v-model:type-filter="typeFilter"
-      v-model:tier-filter="tierFilter"
-      v-model:trait-filter="traitFilter"
-      v-model:job-filter="jobFilter"
-      v-model:view-mode="viewMode"
-      v-model:owned-filter="ownedFilter"
-      :result-count="displayCreatures.length"
-      :trait-options="allTraits"
-      :job-options="allJobs"
-    />
+    <BeastiaryToolbar v-model:search-query="searchQuery" v-model:type-filter="typeFilter"
+      v-model:tier-filter="tierFilter" v-model:trait-filter="traitFilter" v-model:job-filter="jobFilter"
+      v-model:view-mode="viewMode" v-model:owned-filter="ownedFilter" v-model:editing="editing"
+      v-model:bulk-level="bulkLevel" :owned-count="ownedCount" :result-count="displayCreatures.length"
+      :trait-options="allTraits" :job-options="allJobs" @select-all="selectAll" @deselect-all="deselectAll"
+      @apply-bulk-level="applyBulkLevel" />
 
-    <div class="flex gap-5">
-      <div class="min-w-0 flex-1">
-        <div v-if="viewMode === 'grid'" class="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3">
-          <!-- Creature Card -->
-          <article
-            v-for="creature in displayCreatures"
-            :key="creature.id"
-            class="surface-card group relative cursor-pointer overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:border-accent/45 hover:shadow-glow"
-            :class="selectedCreature?.id === creature.id ? 'ring-2 ring-primary/60 border-primary/40' : ''"
-            @click="selectCreature(creature)"
-          >
+    <div>
+        <div v-if="viewMode === 'grid'" class="space-y-6" :style="{ '--card-w': '220px' }">
+          <div v-for="group in groupedByTier" :key="group.tier" class="space-y-3">
+            <div class="flex items-center gap-3">
+              <h2 class="shrink-0 text-sm font-bold uppercase tracking-[0.15em] text-muted-foreground">
+                Tier {{ group.tier + 1 }}
+                <span class="ml-1 text-xs font-normal">
+                  ({{ group.creatures.filter(c => isOwned(c.id)).length }}/{{ group.creatures.length }})
+                </span>
+              </h2>
+              <div class="h-px flex-1 bg-border/60" />
+            </div>
+            <div class="flex flex-wrap justify-evenly gap-8">
+          <div v-for="creature in group.creatures" :key="creature.id"
+            class="group relative w-[var(--card-w)] cursor-pointer rounded-xl border transition" :class="[
+              isOwned(creature.id)
+                ? 'border-primary/40 ring-1 ring-primary/20'
+                : 'border-border/60 opacity-55',
+              selectedCreature?.id === creature.id ? 'ring-2 ring-primary/60 border-primary/40 opacity-100' : '',
+              editing ? '' : 'hover:-translate-y-0.5 hover:opacity-100 hover:shadow-glow'
+            ]" @click="editing ? toggleOwned(creature.id) : selectCreature(creature)">
             <!-- Type gradient bar -->
-            <div
-              class="h-1"
-              :style="{
-                background: creature.types.length > 1
-                  ? `linear-gradient(to right, ${typeColor(creature.types[0])}, ${typeColor(creature.types[1])})`
-                  : typeColor(creature.types[0])
-              }"
-            />
+            <div class="h-1 rounded-t-xl" :style="{
+              background: creature.types.length > 1
+                ? `linear-gradient(to right, ${typeColor(creature.types[0])}, ${typeColor(creature.types[1])})`
+                : typeColor(creature.types[0])
+            }" />
 
-            <div class="p-4">
-              <!-- Hero row: image + info -->
-              <div class="mb-3 flex items-start gap-3">
-                <div class="relative shrink-0">
-                  <img
-                    :src="getCreatureImage(creature)"
-                    :alt="`${creature.name} artwork`"
-                    class="size-[72px] rounded-xl border border-border object-cover"
-                    :style="{ backgroundColor: `hsl(${typeColorVar(creature.types[0])} / 0.1)` }"
-                    loading="lazy"
-                  />
-                  <!-- Tier badge overlay -->
-                  <span class="absolute -right-1 -top-1 rounded-md border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] font-bold text-muted-foreground shadow-sm">
-                    T{{ creature.tier + 1 }}
-                  </span>
-                  <!-- Summoned indicator -->
-                  <span
-                    v-if="isOwned(creature.id)"
-                    class="absolute -left-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
-                  >
-                    <Check class="size-3" />
-                  </span>
-                </div>
+            <!-- Owned check overlay -->
+            <div v-if="isOwned(creature.id)"
+              class="absolute left-2 top-3 z-10 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
+              <Check class="size-3.5" />
+            </div>
 
-                <div class="min-w-0 flex-1">
-                  <h3 class="truncate text-lg font-bold text-foreground">{{ creature.name }}</h3>
-                  <div class="mt-1 flex flex-wrap items-center gap-1.5">
-                    <span
-                      v-for="type in creature.types"
-                      :key="type"
-                      class="rounded-full px-2 py-0.5 text-xs font-semibold"
-                      :style="{
-                        color: typeColor(type),
-                        backgroundColor: `hsl(${typeColorVar(type)} / 0.12)`
-                      }"
-                    >
-                      {{ type }}
-                    </span>
-                    <span class="trait-chip max-w-full">
-                      {{ toTitleCase(creature.trait) }}
-                    </span>
-                  </div>
-                </div>
+            <!-- Tier badge -->
+            <span
+              class="absolute -right-1.5 -top-1.5 z-10 rounded-md border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] font-bold text-muted-foreground shadow-sm">
+              T{{ creature.tier + 1 }}
+            </span>
+
+            <!-- Type chips -->
+            <div class="absolute right-1.5 top-5 z-10 flex flex-col items-end gap-0.5">
+              <span v-for="type in creature.types" :key="type"
+                class="rounded-full px-1.5 py-px text-[10px] font-semibold leading-tight shadow-sm" :style="{
+                  color: typeColor(type),
+                  backgroundColor: `hsl(${typeColorVar(type)} / 0.2)`
+                }">
+                {{ type }}
+              </span>
+            </div>
+
+            <!-- Hero image -->
+            <div class="flex items-center justify-center px-4 pb-5 pt-6"
+              :style="{ background: `linear-gradient(180deg, hsl(${typeColorVar(creature.types[0])} / 0.12) 0%, hsl(var(--card)) 100%)` }">
+              <img :src="getCreatureImage(creature)" :alt="`${creature.name} artwork`"
+                class="size-24 rounded-xl object-cover" loading="lazy" />
+            </div>
+
+            <!-- Divider -->
+            <div class="h-px bg-border/60" />
+
+            <!-- Footer info -->
+            <div class="space-y-2 rounded-b-xl bg-card/80 px-3 pb-3 pt-2.5">
+              <div class="text-center">
+                <p class="truncate text-lg font-extrabold text-foreground">{{ creature.name }}</p>
+                <p v-if="!editing && isOwned(creature.id)" class="font-mono text-[10px] text-muted-foreground">
+                  LVL {{ getLevel(creature.id) }}
+                </p>
               </div>
 
-              <!-- Job mini progress bars -->
-              <div class="grid grid-cols-2 gap-x-3 gap-y-1.5">
+              <!-- Level stepper (edit mode + owned) -->
+              <div v-if="isOwned(creature.id) && editing" class="space-y-1" @click.stop>
+                <p class="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">LVL</p>
                 <div
-                  v-for="[jobKey, jobName] in jobEntries"
-                  :key="jobKey"
-                  class="flex items-center gap-2"
-                >
-                  <span class="w-7 shrink-0 font-mono text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    {{ jobName.slice(0, 3) }}
-                  </span>
-                  <div class="relative h-1.5 flex-1 overflow-hidden rounded-full bg-muted/60">
-                    <div
-                      class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-                      :style="{
-                        width: `${(creature.jobs[jobKey] / maxJobLevel) * 100}%`,
-                        backgroundColor: jobColors[jobKey]
-                      }"
-                    />
-                  </div>
-                  <span class="w-4 shrink-0 text-right font-mono text-[10px] font-semibold text-muted-foreground">
-                    {{ creature.jobs[jobKey] }}
-                  </span>
+                  class="inline-flex w-full items-center overflow-hidden rounded-md border border-input bg-background/85">
+                  <button
+                    class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                    :disabled="getLevel(creature.id) <= 1" aria-label="Decrease level"
+                    @click="stepCollectionLevel(creature.id, -1)">
+                    <Minus class="size-3" />
+                  </button>
+                  <input type="text" inputmode="numeric" pattern="[0-9]*"
+                    class="focus-ring h-7 min-w-0 flex-1 border-x border-input bg-transparent text-center text-xs font-mono"
+                    :value="getLevel(creature.id)" aria-label="Creature level"
+                    @blur="normalizeCollectionLevelOnBlur(creature.id, $event)" />
+                  <button
+                    class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                    :disabled="getLevel(creature.id) >= 120" aria-label="Increase level"
+                    @click="stepCollectionLevel(creature.id, 1)">
+                    <Plus class="size-3" />
+                  </button>
                 </div>
               </div>
             </div>
-          </article>
+          </div>
+            </div>
+          </div>
         </div>
 
         <div v-else class="surface-card overflow-hidden">
@@ -247,89 +289,79 @@ const maxJobLevel = 10
             <table class="min-w-full text-sm" role="grid">
               <thead class="bg-muted/50">
                 <tr>
-                  <th
-                    class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
-                    :aria-sort="tableSortKey === 'name' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-                  >
-                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground" @click="sortBy('name')">
+                  <th class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
+                    :aria-sort="tableSortKey === 'name' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground"
+                      @click="sortBy('name')">
                       Name
-                      <span :class="tableSortKey === 'name' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection === 'asc' ? '▲' : '▼' }}</span>
+                      <span :class="tableSortKey === 'name' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection ===
+                        'asc' ? '▲' : '▼' }}</span>
                     </button>
                   </th>
-                  <th
-                    class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
-                    :aria-sort="tableSortKey === 'tier' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-                  >
-                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground" @click="sortBy('tier')">
+                  <th class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
+                    :aria-sort="tableSortKey === 'tier' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground"
+                      @click="sortBy('tier')">
                       Tier
-                      <span :class="tableSortKey === 'tier' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection === 'asc' ? '▲' : '▼' }}</span>
+                      <span :class="tableSortKey === 'tier' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection ===
+                        'asc' ? '▲' : '▼' }}</span>
                     </button>
                   </th>
-                  <th
-                    class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
-                    :aria-sort="tableSortKey === 'type' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-                  >
-                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground" @click="sortBy('type')">
+                  <th class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
+                    :aria-sort="tableSortKey === 'type' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground"
+                      @click="sortBy('type')">
                       Type
-                      <span :class="tableSortKey === 'type' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection === 'asc' ? '▲' : '▼' }}</span>
+                      <span :class="tableSortKey === 'type' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection ===
+                        'asc' ? '▲' : '▼' }}</span>
                     </button>
                   </th>
-                  <th
-                    class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
-                    :aria-sort="tableSortKey === 'trait' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-                  >
-                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground" @click="sortBy('trait')">
+                  <th class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
+                    :aria-sort="tableSortKey === 'trait' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground"
+                      @click="sortBy('trait')">
                       Trait
-                      <span :class="tableSortKey === 'trait' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection === 'asc' ? '▲' : '▼' }}</span>
+                      <span :class="tableSortKey === 'trait' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection ===
+                        'asc' ? '▲' : '▼' }}</span>
                     </button>
                   </th>
-                  <th
-                    v-for="[jobKey, jobName] in jobEntries"
-                    :key="jobKey"
+                  <th v-for="[jobKey, jobName] in jobEntries" :key="jobKey"
                     class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
-                    :aria-sort="tableSortKey === jobKey ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-                  >
-                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground" @click="sortBy(jobKey)">
-                      <span class="inline-block size-1.5 rounded-full" :style="{ backgroundColor: jobColors[jobKey] }"></span>
+                    :aria-sort="tableSortKey === jobKey ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground"
+                      @click="sortBy(jobKey)">
+                      <span class="inline-block size-1.5 rounded-full"
+                        :style="{ backgroundColor: jobColors[jobKey] }"></span>
                       {{ jobName.slice(0, 3) }}
-                      <span :class="tableSortKey === jobKey ? 'text-primary' : 'opacity-0'">{{ tableSortDirection === 'asc' ? '▲' : '▼' }}</span>
+                      <span :class="tableSortKey === jobKey ? 'text-primary' : 'opacity-0'">{{ tableSortDirection ===
+                        'asc' ? '▲' : '▼' }}</span>
                     </button>
                   </th>
-                  <th
-                    class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
-                    :aria-sort="tableSortKey === 'jobTotal' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-                  >
-                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground" @click="sortBy('jobTotal')">
+                  <th class="px-2 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
+                    :aria-sort="tableSortKey === 'jobTotal' ? (tableSortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button class="focus-ring inline-flex items-center gap-1 transition hover:text-foreground"
+                      @click="sortBy('jobTotal')">
                       Total
-                      <span :class="tableSortKey === 'jobTotal' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection === 'asc' ? '▲' : '▼' }}</span>
+                      <span :class="tableSortKey === 'jobTotal' ? 'text-primary' : 'opacity-0'">{{ tableSortDirection
+                        === 'asc' ? '▲' : '▼' }}</span>
                     </button>
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-border/60">
-                <tr
-                  v-for="creature in sortedCreatures"
-                  :key="creature.id"
+                <tr v-for="creature in sortedCreatures" :key="creature.id"
                   class="cursor-pointer transition-colors duration-150"
                   :class="selectedCreature?.id === creature.id ? 'bg-muted/40' : 'bg-card/50 hover:bg-muted/30'"
-                  @click="selectCreature(creature)"
-                >
-                  <td
-                    class="border-l-2 px-2 py-2.5"
-                    :style="{ borderColor: selectedCreature?.id === creature.id ? typeColor(creature.types[0]) : 'transparent' }"
-                  >
+                  @click="selectCreature(creature)">
+                  <td class="border-l-2 px-2 py-2.5"
+                    :style="{ borderColor: selectedCreature?.id === creature.id ? typeColor(creature.types[0]) : 'transparent' }">
                     <div class="flex items-center gap-3">
                       <div
                         class="inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border text-xs font-bold text-muted-foreground"
-                        :style="{ backgroundColor: 'hsl(' + typeColorVar(creature.types[0]) + ' / 0.1)' }"
-                      >
-                        <img
-                          v-if="getCreatureImage(creature)"
-                          :src="getCreatureImage(creature)"
-                          :alt="`${creature.name} artwork`"
-                          class="size-10 rounded-lg border border-border object-cover"
-                          loading="lazy"
-                        />
+                        :style="{ backgroundColor: 'hsl(' + typeColorVar(creature.types[0]) + ' / 0.1)' }">
+                        <img v-if="getCreatureImage(creature)" :src="getCreatureImage(creature)"
+                          :alt="`${creature.name} artwork`" class="size-10 rounded-lg border border-border object-cover"
+                          loading="lazy" />
                         <span v-else>{{ creature.name.charAt(0) }}</span>
                       </div>
                       <span class="font-semibold text-foreground">{{ creature.name }}</span>
@@ -338,12 +370,9 @@ const maxJobLevel = 10
                   <td class="px-2 py-2.5 font-mono text-xs text-muted-foreground">T{{ creature.tier + 1 }}</td>
                   <td class="px-2 py-2.5">
                     <div class="flex flex-wrap gap-1">
-                      <span
-                        v-for="type in creature.types"
-                        :key="type"
+                      <span v-for="type in creature.types" :key="type"
                         class="rounded-full px-2 py-0.5 text-xs font-semibold"
-                        :style="{ color: typeColor(type), backgroundColor: 'hsl(' + typeColorVar(type) + ' / 0.12)' }"
-                      >
+                        :style="{ color: typeColor(type), backgroundColor: 'hsl(' + typeColorVar(type) + ' / 0.12)' }">
                         {{ type }}
                       </span>
                     </div>
@@ -351,19 +380,14 @@ const maxJobLevel = 10
                   <td class="px-2 py-2.5">
                     <span class="trait-chip">{{ toTitleCase(creature.trait) }}</span>
                   </td>
-                  <td
-                    v-for="[jobKey] in jobEntries"
-                    :key="jobKey"
-                    class="px-2 py-2.5"
-                  >
+                  <td v-for="[jobKey] in jobEntries" :key="jobKey" class="px-2 py-2.5">
                     <div class="flex items-center gap-2">
                       <div class="relative h-2 w-10 overflow-hidden rounded-full bg-muted/60">
-                        <div
-                          class="absolute inset-y-0 left-0 rounded-full"
-                          :style="{ width: (creature.jobs[jobKey] / maxJobLevel) * 100 + '%', backgroundColor: jobColors[jobKey] }"
-                        />
+                        <div class="absolute inset-y-0 left-0 rounded-full"
+                          :style="{ width: (creature.jobs[jobKey] / maxJobLevel) * 100 + '%', backgroundColor: jobColors[jobKey] }" />
                       </div>
-                      <span class="w-4 text-right font-mono text-xs font-semibold text-muted-foreground">{{ creature.jobs[jobKey] }}</span>
+                      <span class="w-4 text-right font-mono text-xs font-semibold text-muted-foreground">{{
+                        creature.jobs[jobKey] }}</span>
                     </div>
                   </td>
                   <td class="px-2 py-2.5 font-mono text-xs font-semibold text-foreground">{{ totalJobs(creature) }}</td>
@@ -372,18 +396,29 @@ const maxJobLevel = 10
             </table>
           </div>
         </div>
-      </div>
+    </div>
 
-      <!-- Detail Sidebar -->
-      <aside v-if="selectedCreature" class="hidden w-[380px] shrink-0 xl:block">
-        <div class="surface-card sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto">
+    <!-- Slide-in Detail Panel -->
+    <Teleport to="body">
+      <!-- Backdrop -->
+      <Transition name="fade">
+        <div
+          v-if="panelOpen && selectedCreature"
+          class="fixed inset-0 z-50 bg-background/60 backdrop-blur-sm"
+          @click="closeDetail"
+        />
+      </Transition>
+
+      <!-- Panel -->
+      <Transition name="slide">
+        <div
+          v-if="panelOpen && selectedCreature"
+          class="fixed inset-y-0 right-0 z-50 w-full max-w-[420px] overflow-y-auto border-l border-border bg-card shadow-2xl"
+        >
           <!-- Gradient header with centered hero -->
-          <div
-            class="relative flex flex-col items-center px-5 pb-4 pt-6"
-            :style="{
-              background: `linear-gradient(180deg, hsl(${typeColorVar(selectedCreature.types[0])} / 0.15) 0%, transparent 100%)`
-            }"
-          >
+          <div class="relative flex flex-col items-center px-5 pb-4 pt-6" :style="{
+            background: `linear-gradient(180deg, hsl(${typeColorVar(selectedCreature.types[0])} / 0.15) 0%, transparent 100%)`
+          }">
             <button
               class="focus-ring absolute right-3 top-3 rounded-lg border border-border/60 bg-card/80 p-2 text-muted-foreground backdrop-blur hover:text-foreground"
               @click="closeDetail"
@@ -391,26 +426,19 @@ const maxJobLevel = 10
               <X class="size-4" />
             </button>
 
-            <img
-              :src="getCreatureImage(selectedCreature)"
-              :alt="`${selectedCreature.name} artwork`"
+            <img :src="getCreatureImage(selectedCreature)" :alt="`${selectedCreature.name} artwork`"
               class="size-24 rounded-2xl border-2 border-border object-cover shadow-lg"
-              :style="{ backgroundColor: `hsl(${typeColorVar(selectedCreature.types[0])} / 0.1)` }"
-            />
+              :style="{ backgroundColor: `hsl(${typeColorVar(selectedCreature.types[0])} / 0.1)` }" />
             <h2 class="mt-3 text-center text-2xl font-black leading-tight">{{ selectedCreature.name }}</h2>
             <p class="mt-1 text-sm text-muted-foreground">
               T{{ selectedCreature.tier + 1 }} · {{ toTitleCase(selectedCreature.mainJob) }}
             </p>
             <div class="mt-2 flex flex-wrap justify-center gap-2">
-              <span
-                v-for="type in selectedCreature.types"
-                :key="type"
-                class="rounded-full px-3 py-1 text-xs font-semibold"
-                :style="{
+              <span v-for="type in selectedCreature.types" :key="type"
+                class="rounded-full px-3 py-1 text-xs font-semibold" :style="{
                   color: typeColor(type),
                   backgroundColor: `hsl(${typeColorVar(type)} / 0.12)`
-                }"
-              >
+                }">
                 {{ type }}
               </span>
               <span class="trait-chip">
@@ -431,47 +459,36 @@ const maxJobLevel = 10
             <section class="border-t border-border/60 pt-4">
               <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Collection</h3>
               <div class="space-y-3">
-                <label class="flex cursor-pointer items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+                <label
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
                   <span class="text-sm font-medium text-foreground">Summoned</span>
-                  <button
-                    role="switch"
-                    :aria-checked="isOwned(selectedCreature.id)"
+                  <button role="switch" :aria-checked="isOwned(selectedCreature.id)"
                     class="focus-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors"
                     :class="isOwned(selectedCreature.id) ? 'bg-primary' : 'bg-muted'"
-                    @click="toggleOwned(selectedCreature.id)"
-                  >
-                    <span
-                      class="inline-block size-4 rounded-full bg-white shadow-sm transition-transform"
-                      :class="isOwned(selectedCreature.id) ? 'translate-x-6' : 'translate-x-1'"
-                    />
+                    @click="toggleOwned(selectedCreature.id)">
+                    <span class="inline-block size-4 rounded-full bg-white shadow-sm transition-transform"
+                      :class="isOwned(selectedCreature.id) ? 'translate-x-6' : 'translate-x-1'" />
                   </button>
                 </label>
-                <div v-if="isOwned(selectedCreature.id)" class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+                <div v-if="isOwned(selectedCreature.id)"
+                  class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
                   <span class="text-sm font-medium text-foreground">Level</span>
-                  <div class="ml-auto inline-flex items-center overflow-hidden rounded-md border border-input bg-background/85">
+                  <div
+                    class="ml-auto inline-flex items-center overflow-hidden rounded-md border border-input bg-background/85">
                     <button
                       class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                      :disabled="getLevel(selectedCreature.id) <= 1"
-                      aria-label="Decrease creature level"
-                      @click="stepCollectionLevel(selectedCreature.id, -1)"
-                    >
+                      :disabled="getLevel(selectedCreature.id) <= 1" aria-label="Decrease creature level"
+                      @click="stepCollectionLevel(selectedCreature.id, -1)">
                       <Minus class="size-3" />
                     </button>
-                    <input
-                      type="text"
-                      inputmode="numeric"
-                      pattern="[0-9]*"
+                    <input type="text" inputmode="numeric" pattern="[0-9]*"
                       class="focus-ring h-7 w-11 border-x border-input bg-transparent text-center text-xs font-mono"
-                      :value="getLevel(selectedCreature.id)"
-                      aria-label="Creature level"
-                      @blur="normalizeCollectionLevelOnBlur(selectedCreature.id, $event)"
-                    />
+                      :value="getLevel(selectedCreature.id)" aria-label="Creature level"
+                      @blur="normalizeCollectionLevelOnBlur(selectedCreature.id, $event)" />
                     <button
                       class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                      :disabled="getLevel(selectedCreature.id) >= 120"
-                      aria-label="Increase creature level"
-                      @click="stepCollectionLevel(selectedCreature.id, 1)"
-                    >
+                      :disabled="getLevel(selectedCreature.id) >= 120" aria-label="Increase creature level"
+                      @click="stepCollectionLevel(selectedCreature.id, 1)">
                       <Plus class="size-3" />
                     </button>
                   </div>
@@ -491,14 +508,12 @@ const maxJobLevel = 10
                 <StatRadarChart :creature="selectedCreature" :stats-override="selectedCreatureStats" :size="180" />
               </div>
               <div class="mt-3 grid grid-cols-3 gap-2">
-                <div
-                  v-for="[statKey, statLabel] in statEntries"
-                  :key="statKey"
+                <div v-for="[statKey, statLabel] in statEntries" :key="statKey"
                   class="rounded-lg border px-2 py-2 text-center transition-colors"
-                  :class="statHighlight(selectedCreature, statKey)"
-                >
+                  :class="statHighlight(selectedCreature, statKey)">
                   <p class="font-mono text-xs">{{ (selectedCreatureStats ?? selectedCreature.stats)[statKey] }}</p>
-                  <p v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground/60">(BASE {{ selectedCreature.stats[statKey] }})</p>
+                  <p v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground/60">(BASE {{
+                    selectedCreature.stats[statKey] }})</p>
                   <p class="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{{ statLabel }}</p>
                 </div>
               </div>
@@ -508,183 +523,37 @@ const maxJobLevel = 10
             <section class="border-t border-border/60 pt-4">
               <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Job Levels</h3>
               <div class="flex flex-wrap justify-center gap-3">
-                <ProficiencyRing
-                  v-for="[jobKey, jobName] in jobEntries"
-                  :key="jobKey"
-                  :label="jobName.slice(0, 3)"
-                  :value="selectedCreature.jobs[jobKey]"
-                  :max-value="maxJobLevel"
-                  :color="jobColors[jobKey]"
-                  size="sm"
-                />
+                <ProficiencyRing v-for="[jobKey, jobName] in jobEntries" :key="jobKey" :label="jobName.slice(0, 3)"
+                  :value="selectedCreature.jobs[jobKey]" :max-value="maxJobLevel" :color="jobColors[jobKey]"
+                  size="sm" />
               </div>
             </section>
 
-            <!-- Summoning Cost -->
-            <section class="border-t border-border/60 pt-4">
-              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Summoning Cost</h3>
+            <!-- Best Expeditions -->
+            <section v-if="bestExpeditions.length" class="border-t border-border/60 pt-4">
+              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Best Expeditions</h3>
               <div class="space-y-2">
-                <div
-                  v-for="cost in selectedCreature.summoningCost"
-                  :key="cost.id"
-                  class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
-                >
-                  <img v-if="getItemImage({ id: cost.id })" :src="getItemImage({ id: cost.id })" :alt="toTitleCase(cost.id)" class="size-5 shrink-0 object-contain" />
-                  <span v-else class="size-1.5 shrink-0 rounded-full bg-accent/60" />
-                  <span class="flex-1 text-sm text-foreground">{{ toTitleCase(cost.id) }}</span>
-                  <span class="font-mono text-sm font-semibold text-muted-foreground">x{{ cost.amount }}</span>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </aside>
-    </div>
-
-    <!-- Mobile Modal -->
-    <Teleport to="body">
-      <div
-        v-if="selectedCreature && isMobile"
-        class="fixed inset-0 z-50 bg-background/92 p-4 backdrop-blur-sm xl:hidden"
-        @click.self="closeDetail"
-      >
-        <div class="mx-auto max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-border bg-card shadow-card">
-          <!-- Gradient header -->
-          <div
-            class="relative flex flex-col items-center px-5 pb-4 pt-6"
-            :style="{
-              background: `linear-gradient(180deg, hsl(${typeColorVar(selectedCreature.types[0])} / 0.15) 0%, transparent 100%)`
-            }"
-          >
-            <button
-              class="focus-ring absolute right-3 top-3 rounded-lg border border-border/60 bg-card/80 p-2 backdrop-blur"
-              @click="closeDetail"
-            >
-              <X class="size-4" />
-            </button>
-
-            <img
-              :src="getCreatureImage(selectedCreature)"
-              :alt="`${selectedCreature.name} artwork`"
-              class="size-20 rounded-2xl border-2 border-border object-cover shadow-lg"
-              :style="{ backgroundColor: `hsl(${typeColorVar(selectedCreature.types[0])} / 0.1)` }"
-            />
-            <h2 class="mt-3 text-center text-xl font-black">{{ selectedCreature.name }}</h2>
-            <p class="mt-1 text-sm text-muted-foreground">
-              T{{ selectedCreature.tier + 1 }} · {{ toTitleCase(selectedCreature.mainJob) }}
-            </p>
-            <div class="mt-2 flex flex-wrap justify-center gap-2">
-              <span
-                v-for="type in selectedCreature.types"
-                :key="type"
-                class="rounded-full px-3 py-1 text-xs font-semibold"
-                :style="{
-                  color: typeColor(type),
-                  backgroundColor: `hsl(${typeColorVar(type)} / 0.12)`
-                }"
-              >
-                {{ type }}
-              </span>
-              <span class="trait-chip">{{ toTitleCase(selectedCreature.trait) }}</span>
-            </div>
-          </div>
-
-          <div class="space-y-5 px-5 pb-5">
-            <!-- Description -->
-            <div class="border-t border-border/60 pt-4">
-              <p class="text-sm text-muted-foreground">{{ selectedCreature.description }}</p>
-            </div>
-
-            <!-- Collection -->
-            <section class="border-t border-border/60 pt-4">
-              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Collection</h3>
-              <div class="space-y-3">
-                <label class="flex cursor-pointer items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
-                  <span class="text-sm font-medium text-foreground">Summoned</span>
-                  <button
-                    role="switch"
-                    :aria-checked="isOwned(selectedCreature.id)"
-                    class="focus-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors"
-                    :class="isOwned(selectedCreature.id) ? 'bg-primary' : 'bg-muted'"
-                    @click="toggleOwned(selectedCreature.id)"
-                  >
-                    <span
-                      class="inline-block size-4 rounded-full bg-white shadow-sm transition-transform"
-                      :class="isOwned(selectedCreature.id) ? 'translate-x-6' : 'translate-x-1'"
-                    />
-                  </button>
-                </label>
-                <div v-if="isOwned(selectedCreature.id)" class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
-                  <span class="text-sm font-medium text-foreground">Level</span>
-                  <div class="ml-auto inline-flex items-center overflow-hidden rounded-md border border-input bg-background/85">
-                    <button
-                      class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                      :disabled="getLevel(selectedCreature.id) <= 1"
-                      aria-label="Decrease creature level"
-                      @click="stepCollectionLevel(selectedCreature.id, -1)"
-                    >
-                      <Minus class="size-3" />
-                    </button>
-                    <input
-                      type="text"
-                      inputmode="numeric"
-                      pattern="[0-9]*"
-                      class="focus-ring h-7 w-11 border-x border-input bg-transparent text-center text-xs font-mono"
-                      :value="getLevel(selectedCreature.id)"
-                      aria-label="Creature level"
-                      @blur="normalizeCollectionLevelOnBlur(selectedCreature.id, $event)"
-                    />
-                    <button
-                      class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                      :disabled="getLevel(selectedCreature.id) >= 120"
-                      aria-label="Increase creature level"
-                      @click="stepCollectionLevel(selectedCreature.id, 1)"
-                    >
-                      <Plus class="size-3" />
-                    </button>
+                <router-link v-for="(entry, index) in bestExpeditions" :key="entry.expedition.id" :to="{ path: '/expeditions', query: { expedition: entry.expedition.id } }"
+                  class="block rounded-lg border border-border/60 bg-muted/20 px-3 py-2 transition hover:border-accent/45 hover:bg-muted/30">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="flex min-w-0 items-center gap-1.5 text-sm font-medium text-foreground">
+                      <span class="shrink-0 font-mono text-xs text-muted-foreground">{{ index + 1 }}.</span>
+                      <img
+                        v-if="entry.expedition.rewards.length && getItemImage({ id: entry.expedition.rewards[0].itemId })"
+                        :src="getItemImage({ id: entry.expedition.rewards[0].itemId })"
+                        :alt="toTitleCase(entry.expedition.rewards[0].itemId)"
+                        class="size-5 shrink-0 object-contain" />
+                      <span class="truncate">{{ entry.expedition.name }}</span>
+                    </span>
+                    <span class="shrink-0 font-mono text-xs font-semibold text-primary">{{ entry.score }}%</span>
                   </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- Stats with Radar Chart -->
-            <section class="border-t border-border/60 pt-4">
-              <div class="mb-3 flex items-baseline justify-between">
-                <h3 class="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Stats</h3>
-                <span v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground">
-                  LVL {{ getLevel(selectedCreature.id) }}
-                </span>
-              </div>
-              <div class="flex justify-center">
-                <StatRadarChart :creature="selectedCreature" :stats-override="selectedCreatureStats" :size="160" />
-              </div>
-              <div class="mt-3 grid grid-cols-3 gap-2">
-                <div
-                  v-for="[statKey, statLabel] in statEntries"
-                  :key="statKey"
-                  class="rounded-lg border px-2 py-2 text-center transition-colors"
-                  :class="statHighlight(selectedCreature, statKey)"
-                >
-                  <p class="font-mono text-xs">{{ (selectedCreatureStats ?? selectedCreature.stats)[statKey] }}</p>
-                  <p v-if="selectedCreatureStats" class="font-mono text-[10px] text-muted-foreground/60">(BASE {{ selectedCreature.stats[statKey] }})</p>
-                  <p class="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{{ statLabel }}</p>
-                </div>
-              </div>
-            </section>
-
-            <!-- Job Levels with Proficiency Rings -->
-            <section class="border-t border-border/60 pt-4">
-              <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Job Levels</h3>
-              <div class="flex flex-wrap justify-center gap-3">
-                <ProficiencyRing
-                  v-for="[jobKey, jobName] in jobEntries"
-                  :key="jobKey"
-                  :label="jobName.slice(0, 3)"
-                  :value="selectedCreature.jobs[jobKey]"
-                  :max-value="maxJobLevel"
-                  :color="jobColors[jobKey]"
-                  size="sm"
-                />
+                  <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                    <span>{{ entry.biomeName }}</span>
+                    <span v-if="entry.traitMatch" class="text-primary">· Trait ✓</span>
+                    <span v-if="entry.biomeStatus === 'advantage'" class="text-green-500">· ▲ Advantage</span>
+                    <span v-if="entry.biomeStatus === 'disadvantage'" class="text-destructive">· ▼ Disadvantage</span>
+                  </div>
+                </router-link>
               </div>
             </section>
 
@@ -692,12 +561,10 @@ const maxJobLevel = 10
             <section class="border-t border-border/60 pt-4">
               <h3 class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Summoning Cost</h3>
               <div class="space-y-2">
-                <div
-                  v-for="cost in selectedCreature.summoningCost"
-                  :key="cost.id"
-                  class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
-                >
-                  <img v-if="getItemImage({ id: cost.id })" :src="getItemImage({ id: cost.id })" :alt="toTitleCase(cost.id)" class="size-5 shrink-0 object-contain" />
+                <div v-for="cost in selectedCreature.summoningCost" :key="cost.id"
+                  class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2">
+                  <img v-if="getItemImage({ id: cost.id })" :src="getItemImage({ id: cost.id })"
+                    :alt="toTitleCase(cost.id)" class="size-5 shrink-0 object-contain" />
                   <span v-else class="size-1.5 shrink-0 rounded-full bg-accent/60" />
                   <span class="flex-1 text-sm text-foreground">{{ toTitleCase(cost.id) }}</span>
                   <span class="font-mono text-sm font-semibold text-muted-foreground">x{{ cost.amount }}</span>
@@ -706,7 +573,27 @@ const maxJobLevel = 10
             </section>
           </div>
         </div>
-      </div>
+      </Transition>
     </Teleport>
   </section>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.25s ease;
+}
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(100%);
+}
+</style>
