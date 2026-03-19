@@ -8,6 +8,9 @@ import { getCreatureImage } from '@/utils/creatureImages'
 import { jobColors, jobLabels, statLabels, getBestExpeditionsForCreature } from '@/utils/formulas'
 import { toTitleCase, typeColor, typeColorVar } from '@/utils/format'
 import { getItemImage } from '@/utils/itemImages'
+import { useItems } from '@/composables/useItems'
+
+const { getItemById } = useItems()
 import StatRadarChart from '@/components/beastiary/StatRadarChart.vue'
 import ProficiencyRing from '@/components/beastiary/ProficiencyRing.vue'
 import BeastiaryToolbar from '@/components/beastiary/BeastiaryToolbar.vue'
@@ -564,9 +567,9 @@ const maxJobLevel = 10
                 <div v-for="cost in selectedCreature.summoningCost" :key="cost.id"
                   class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2">
                   <img v-if="getItemImage({ id: cost.id })" :src="getItemImage({ id: cost.id })"
-                    :alt="toTitleCase(cost.id)" class="size-5 shrink-0 object-contain" />
+                    :alt="getItemById(cost.id)?.name ?? toTitleCase(cost.id)" class="size-5 shrink-0 object-contain" />
                   <span v-else class="size-1.5 shrink-0 rounded-full bg-accent/60" />
-                  <span class="flex-1 text-sm text-foreground">{{ toTitleCase(cost.id) }}</span>
+                  <span class="flex-1 text-sm text-foreground">{{ getItemById(cost.id)?.name ?? toTitleCase(cost.id) }}</span>
                   <span class="font-mono text-sm font-semibold text-muted-foreground">x{{ cost.amount }}</span>
                 </div>
               </div>
