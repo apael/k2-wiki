@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Check, Minus, Plus, X } from 'lucide-vue-next'
+import { Check, Minus, Plus, TrendingUp, X } from 'lucide-vue-next'
 import { useCreatures } from '@/composables/useCreatures'
 import { useCreatureCollection } from '@/composables/useCreatureCollection'
 import type { Creature, CreatureStats, Jobs } from '@/types'
@@ -494,6 +494,17 @@ const maxJobLevel = 10
                   </div>
                 </div>
               </div>
+            </section>
+
+            <!-- Plan Leveling Link -->
+            <section class="border-t border-border/60 pt-4">
+              <router-link
+                :to="{ path: '/planner', query: { tab: 'levelup', creature: selectedCreature.id } }"
+                class="focus-ring flex w-full items-center justify-center gap-2 rounded-lg border border-primary/35 bg-primary/12 px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/18"
+              >
+                <TrendingUp class="size-4" />
+                Plan Leveling
+              </router-link>
             </section>
 
             <!-- Stats with Radar Chart -->
