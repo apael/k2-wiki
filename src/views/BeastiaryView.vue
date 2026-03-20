@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Check, Minus, Plus, TrendingUp, X } from 'lucide-vue-next'
+import { Check, Minus, Pencil, Plus, TrendingUp, X } from 'lucide-vue-next'
 import { useCreatures } from '@/composables/useCreatures'
 import { useCreatureCollection } from '@/composables/useCreatureCollection'
 import type { Creature, CreatureStats, Jobs } from '@/types'
@@ -30,28 +30,9 @@ const { isOwned, getLevel, toggleOwned, setLevel, ownedCreatureIds } = useCreatu
 
 const ownedFilter = ref<'all' | 'owned' | 'unowned'>('all')
 const editing = ref(false)
-const bulkLevel = ref(1)
 
 const ownedCount = computed(() => ownedCreatureIds.value.size)
 
-function selectAll() {
-  for (const c of displayCreatures.value) {
-    if (!isOwned(c.id)) toggleOwned(c.id)
-  }
-}
-
-function deselectAll() {
-  for (const c of displayCreatures.value) {
-    if (isOwned(c.id)) toggleOwned(c.id)
-  }
-}
-
-function applyBulkLevel() {
-  const level = clampCollectionLevel(bulkLevel.value)
-  for (const c of displayCreatures.value) {
-    if (isOwned(c.id)) setLevel(c.id, level)
-  }
-}
 
 const displayCreatures = computed(() => {
   if (ownedFilter.value === 'all') return filteredCreatures.value
@@ -183,10 +164,37 @@ const maxJobLevel = 10
   <section class="space-y-5 lg:space-y-6">
     <BeastiaryToolbar v-model:search-query="searchQuery" v-model:type-filter="typeFilter"
       v-model:tier-filter="tierFilter" v-model:trait-filter="traitFilter" v-model:job-filter="jobFilter"
-      v-model:view-mode="viewMode" v-model:owned-filter="ownedFilter" v-model:editing="editing"
-      v-model:bulk-level="bulkLevel" :owned-count="ownedCount" :result-count="displayCreatures.length"
-      :trait-options="allTraits" :job-options="allJobs" @select-all="selectAll" @deselect-all="deselectAll"
-      @apply-bulk-level="applyBulkLevel" />
+      v-model:view-mode="viewMode" v-model:owned-filter="ownedFilter"
+      :owned-count="ownedCount" :result-count="displayCreatures.length"
+      :trait-options="allTraits" :job-options="allJobs" />
+
+    <!-- Collection edit bar -->
+    <div class="flex flex-wrap items-center gap-2">
+      <template v-if="!editing">
+        <div class="ml-auto">
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
+            @click="editing = true"
+          >
+            <Pencil class="size-4" />
+            Edit Collection
+          </button>
+        </div>
+      </template>
+
+      <template v-else>
+        <!-- Done (right side) -->
+        <div class="ml-auto flex items-center gap-2">
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition"
+            @click="editing = false"
+          >
+            <Pencil class="size-4" />
+            Done
+          </button>
+        </div>
+      </template>
+    </div>
 
     <div>
         <div v-if="viewMode === 'grid'" class="space-y-6" :style="{ '--card-w': '220px' }">
