@@ -27,6 +27,7 @@ export function useExpeditions(creatures: Creature[]) {
   const partySlots = ref<(Creature | null)[]>([])
   const activeSlotIndex = ref<number | null>(null)
   const creatureLevels = ref<Record<string, number>>({})
+  const expeditionParties = ref<Record<string, (Creature | null)[]>>({})
 
   const filteredExpeditions = computed(() => {
     return expeditions.value
@@ -46,14 +47,31 @@ export function useExpeditions(creatures: Creature[]) {
   })
 
   // Reset party slots when expedition changes
-  watch(selectedExpedition, (exp) => {
-    if (exp) {
-      partySlots.value = Array(exp.maxPartySize).fill(null)
-    } else {
-      partySlots.value = []
-    }
+watch(selectedExpedition, (exp) => {
+  if (!exp) {
+    partySlots.value = []
     activeSlotIndex.value = null
-  })
+    return
+  }
+
+  // create party if it doesn't exist
+  if (!expeditionParties.value[exp.id]) {
+    expeditionParties.value[exp.id] = Array(exp.maxPartySize).fill(null)
+  }
+
+  // load it
+  partySlots.value = expeditionParties.value[exp.id]
+  activeSlotIndex.value = null
+})
+
+watch(
+  partySlots,
+  (slots) => {
+    if (!selectedExpedition.value) return
+    expeditionParties.value[selectedExpedition.value.id] = [...slots]
+  },
+  { deep: true }
+)
 
   const getBiome = (id: string): Biome | undefined => {
     return biomes.value.find(b => b.id === id)
@@ -64,9 +82,17 @@ export function useExpeditions(creatures: Creature[]) {
     return getBiome(selectedExpedition.value.biome)
   })
 
-  const partyCreatureIds = computed(() => {
-    return new Set(partySlots.value.filter(Boolean).map(c => c!.id))
-  })
+const assignedCreatureIds = computed(() => {
+  const ids = new Set<string>()
+
+  for (const party of Object.values(expeditionParties.value)) {
+    for (const creature of party) {
+      if (creature) ids.add(creature.id)
+    }
+  }
+
+  return ids
+})
 
   const recommendedCreatures = computed(() => {
     if (!selectedExpedition.value) return []
@@ -74,7 +100,7 @@ export function useExpeditions(creatures: Creature[]) {
     const biome = currentBiome.value
     const remainingScore = difficultyRating.value - partyScore.value
     const base = getRecommendedCreatures(
-      creatures.filter(c => !partyCreatureIds.value.has(c.id)),
+      creatures.filter(c => !assignedCreatureIds.value.has(c.id)),
       expedition,
       creatureLevels.value,
       biome
@@ -224,6 +250,135 @@ export function useExpeditions(creatures: Creature[]) {
     return Array.from(ids).sort()
   })
 
+  function resetAllExpeditions() {
+  // clear all saved parties
+  expeditionParties.value = {}
+
+  // reset current view
+  if (selectedExpedition.value) {
+    partySlots.value = Array(selectedExpedition.value.maxPartySize).fill(null)
+  } else {
+    partySlots.value = []
+  }
+
+  activeSlotIndex.value = null
+}
+
+function evaluateExpedition(exp: Expedition) {
+  const party = expeditionParties.value[exp.id]
+  if (!party || party.every(c => c === null)) return null
+
+  const biome = getBiome(exp.biome)
+
+  // try tiers from highest → lowest
+  const maxTier = 10 // adjust if needed
+  let bestTier = 1
+
+  for (let tier = maxTier; tier >= 1; tier--) {
+    const difficulty = calculateDifficultyRating(exp, tier)
+
+    const score = calculatePartyScore(
+      party,
+      exp,
+      creatureLevels.value,
+      biome
+    )
+
+    if (score >= difficulty) {
+      bestTier = tier
+      break
+    }
+  }
+
+  const activeCreatures = party.filter(Boolean).length
+  if (activeCreatures === 0) return null
+
+  const xp = calculateExpeditionXp(exp, bestTier, 0, activeCreatures)
+
+  const duration = calculateDuration(
+    calculatePartyScore(party, exp, creatureLevels.value, biome),
+    exp,
+    bestTier
+  )
+
+  if (!xp || !duration || duration <= 0) return null
+
+  const xpPerSecond = xp / duration
+
+  return {
+    expeditionId: exp.id,
+    tier: bestTier,
+    xp,
+    duration,
+    xpPerSecond,
+  }
+}
+
+const totalXpPerSecond = computed(() => {
+  let total = 0
+
+  for (const exp of expeditions.value) {
+    const result = evaluateExpedition(exp)
+    if (result) {
+      total += result.xpPerSecond
+    }
+  }
+
+  return Math.round(total* 100) / 100
+})
+
+function exportSetup() {
+  const data = {
+    parties: Object.fromEntries(
+      Object.entries(expeditionParties.value).map(([expId, party]) => [
+        expId,
+        party.map(c => (c ? c.id : null)),
+      ])
+    ),
+    levels: creatureLevels.value,
+  }
+
+  return JSON.stringify(data)
+}
+
+function importSetup(json: string) {
+  try {
+    const parsed = JSON.parse(json)
+
+    if (!parsed.parties) return false
+
+    // rebuild parties using creature IDs → objects
+    const newParties: Record<string, (Creature | null)[]> = {}
+
+    for (const [expId, partyIds] of Object.entries(parsed.parties)) {
+      if (!Array.isArray(partyIds)) continue
+
+      newParties[expId] = partyIds.map(id =>
+        id ? creatures.find(c => c.id === id) || null : null
+      )
+    }
+
+    expeditionParties.value = newParties
+
+    if (parsed.levels) {
+      creatureLevels.value = parsed.levels
+    }
+
+    // refresh current expedition view
+    if (selectedExpedition.value) {
+      const expId = selectedExpedition.value.id
+      partySlots.value =
+        expeditionParties.value[expId] ||
+        Array(selectedExpedition.value.maxPartySize).fill(null)
+    }
+
+    return true
+  } catch (e) {
+    console.error('Import failed', e)
+    return false
+  }
+}
+
   return {
     expeditions,
     filteredExpeditions,
@@ -248,6 +403,7 @@ export function useExpeditions(creatures: Creature[]) {
     levelsGained,
     partyXpProgress,
     currentBiome,
+    totalXpPerSecond,
     getBiome,
     assignCreatureToSlot,
     removeCreatureFromSlot,
@@ -255,5 +411,8 @@ export function useExpeditions(creatures: Creature[]) {
     getCreatureSlotRating,
     updateCreatureLevel,
     uniqueBiomes,
+    resetAllExpeditions,
+    exportSetup,
+    importSetup,
   }
 }
