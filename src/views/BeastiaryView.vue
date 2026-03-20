@@ -32,6 +32,7 @@ const { collection, isOwned, setOwned, getLevel, toggleOwned, setLevel, ownedCre
 
 const ownedFilter = ref<'all' | 'owned' | 'unowned'>('all')
 const editing = ref(false)
+const bulkLevel = ref(1)
 
 const ownedCount = computed(() => ownedCreatureIds.value.size)
 
@@ -61,6 +62,13 @@ function deselectAllVisible() {
 function bulkSetSummoned(owned: boolean) {
   for (const id of selectedIds.value) {
     setOwned(id, owned)
+  }
+}
+
+function bulkApplyLevel() {
+  const level = clampCollectionLevel(bulkLevel.value)
+  for (const id of selectedIds.value) {
+    if (isOwned(id)) setLevel(id, level)
   }
 }
 
@@ -272,6 +280,56 @@ const maxJobLevel = 10
           <img :src="notSummonedIcon" alt="" class="size-4" />
           Not Summoned
         </button>
+
+        <!-- Divider -->
+        <div class="h-8 w-0.5 rounded-full bg-muted-foreground/30" />
+
+        <!-- Level -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-semibold text-muted-foreground">LVL</span>
+          <button
+            class="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="bulkLevel <= 1"
+            aria-label="Decrease bulk level"
+            @click="bulkLevel = Math.max(1, bulkLevel - 1)"
+          >
+            <Minus class="size-3.5" />
+          </button>
+          <input
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            class="focus-ring h-8 w-11 rounded-md border border-input bg-background/85 text-center text-sm font-mono font-semibold"
+            :value="bulkLevel"
+            aria-label="Bulk level"
+            @blur="bulkLevel = Math.max(1, Math.min(120, Math.round(Number(($event.target as HTMLInputElement).value) || 1)))"
+            @keydown.enter="($event.target as HTMLInputElement).blur()"
+          />
+          <button
+            class="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="bulkLevel >= 120"
+            aria-label="Increase bulk level"
+            @click="bulkLevel = Math.min(120, bulkLevel + 1)"
+          >
+            <Plus class="size-3.5" />
+          </button>
+          <input
+            type="range"
+            min="1"
+            max="120"
+            :value="bulkLevel"
+            class="level-slider h-1.5 w-32 min-w-0 cursor-pointer"
+            aria-label="Bulk level slider"
+            @input="bulkLevel = +($event.target as HTMLInputElement).value"
+          />
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!selectedIds.size"
+            @click="bulkApplyLevel"
+          >
+            Set Level
+          </button>
+        </div>
 
         <!-- Done/Cancel (right side) -->
         <div class="ml-auto flex items-center gap-2">
@@ -728,5 +786,40 @@ const maxJobLevel = 10
 .slide-enter-from,
 .slide-leave-to {
   transform: translateX(100%);
+}
+
+/* Level slider styling */
+.level-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 3px;
+  background: hsl(var(--muted));
+}
+.level-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  margin-top: -4px;
+}
+.level-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: hsl(var(--primary));
+  cursor: pointer;
+}
+.level-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: hsl(var(--muted));
+}
+.level-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: hsl(var(--muted));
 }
 </style>
