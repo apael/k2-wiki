@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Columns3, Grid2x2, Minus, Pencil, Plus, Search, SlidersHorizontal } from 'lucide-vue-next'
+import { Columns3, Grid2x2, Search, SlidersHorizontal } from 'lucide-vue-next'
 import type { ElementType } from '@/types'
 import { toTitleCase } from '@/utils/format'
 
@@ -12,8 +12,6 @@ const props = defineProps<{
   jobFilter: string | 'all'
   viewMode: 'grid' | 'table'
   ownedFilter: 'all' | 'owned' | 'unowned'
-  editing: boolean
-  bulkLevel: number
   ownedCount: number
   resultCount: number
   traitOptions: string[]
@@ -28,11 +26,6 @@ const emit = defineEmits<{
   'update:jobFilter': [value: string | 'all']
   'update:viewMode': [value: 'grid' | 'table']
   'update:ownedFilter': [value: 'all' | 'owned' | 'unowned']
-  'update:editing': [value: boolean]
-  'update:bulkLevel': [value: number]
-  'selectAll': []
-  'deselectAll': []
-  'applyBulkLevel': []
 }>()
 
 const typeOptions: Array<ElementType | 'all'> = ['all', 'Fire', 'Water', 'Wind', 'Earth']
@@ -86,18 +79,6 @@ const typeDotColor: Record<ElementType, string> = {
           Table
         </button>
       </div>
-
-      <!-- Edit mode toggle -->
-      <button
-        class="focus-ring inline-flex w-[5.5rem] items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition"
-        :class="props.editing
-          ? 'border-primary bg-primary text-primary-foreground shadow-glow'
-          : 'border-border bg-card text-muted-foreground hover:border-accent/50 hover:text-foreground'"
-        @click="emit('update:editing', !props.editing)"
-      >
-        <Pencil class="size-4" />
-        {{ props.editing ? 'Done' : 'Edit' }}
-      </button>
 
       <!-- Mobile filter toggle -->
       <button
@@ -224,52 +205,6 @@ const typeDotColor: Record<ElementType, string> = {
         </div>
       </div>
 
-      <!-- Bulk summon (edit mode) -->
-      <div v-if="props.editing" class="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
-        <span class="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Mark</span>
-        <button class="pill focus-ring pill-active" @click="emit('selectAll')">
-          All Visible as Summoned
-        </button>
-        <button class="pill focus-ring" @click="emit('deselectAll')">
-          All Visible as Not Summoned
-        </button>
-      </div>
-
-      <!-- Bulk level (edit mode) -->
-      <div v-if="props.editing" class="flex flex-wrap items-center gap-2">
-        <span class="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Level</span>
-        <div class="inline-flex items-center overflow-hidden rounded-md border border-input bg-background/85">
-          <button
-            class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-            :disabled="props.bulkLevel <= 1"
-            aria-label="Decrease bulk level"
-            @click="emit('update:bulkLevel', Math.max(1, props.bulkLevel - 1))"
-          >
-            <Minus class="size-3" />
-          </button>
-          <input
-            type="text"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            class="focus-ring h-7 w-11 border-x border-input bg-transparent text-center text-xs font-mono"
-            :value="props.bulkLevel"
-            aria-label="Bulk level"
-            @blur="emit('update:bulkLevel', Math.max(1, Math.min(120, Math.round(Number(($event.target as HTMLInputElement).value) || 1))))"
-          />
-          <button
-            class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-            :disabled="props.bulkLevel >= 120"
-            aria-label="Increase bulk level"
-            @click="emit('update:bulkLevel', Math.min(120, props.bulkLevel + 1))"
-          >
-            <Plus class="size-3" />
-          </button>
-        </div>
-        <button class="pill focus-ring pill-active" @click="emit('applyBulkLevel')">
-          Apply to All Summoned
-        </button>
-        <span class="text-[11px] text-muted-foreground">Sets level for all summoned creatures shown</span>
-      </div>
     </div>
   </div>
 </template>
