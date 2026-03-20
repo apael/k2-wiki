@@ -298,7 +298,7 @@ export function useExpeditions(creatures: Creature[]) {
     const biome = getBiome(exp.biome);
 
     // try tiers from highest → lowest
-    const maxTier = 10; // adjust if needed
+    const maxTier = 5; // adjust if needed
     let bestTier = 1;
 
     for (let tier = maxTier; tier >= 1; tier--) {
