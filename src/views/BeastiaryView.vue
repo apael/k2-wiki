@@ -26,13 +26,53 @@ const {
   allJobs,
 } = useCreatures()
 
-const { isOwned, getLevel, toggleOwned, setLevel, ownedCreatureIds } = useCreatureCollection()
+const { collection, isOwned, getLevel, toggleOwned, setLevel, ownedCreatureIds } = useCreatureCollection()
 
 const ownedFilter = ref<'all' | 'owned' | 'unowned'>('all')
 const editing = ref(false)
 
 const ownedCount = computed(() => ownedCreatureIds.value.size)
 
+// Selection state (separate from owned)
+const selectedIds = ref(new Set<string>())
+
+function toggleSelected(id: string) {
+  const next = new Set(selectedIds.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  selectedIds.value = next
+}
+
+function selectAllVisible() {
+  const next = new Set(selectedIds.value)
+  for (const c of displayCreatures.value) next.add(c.id)
+  selectedIds.value = next
+}
+
+function deselectAllVisible() {
+  const next = new Set(selectedIds.value)
+  for (const c of displayCreatures.value) next.delete(c.id)
+  selectedIds.value = next
+}
+
+// Snapshot collection on edit enter, restore on cancel
+let collectionSnapshot: Record<string, any> = {}
+
+function startEditing() {
+  collectionSnapshot = JSON.parse(JSON.stringify(collection.value))
+  editing.value = true
+}
+
+function finishEditing() {
+  selectedIds.value = new Set()
+  editing.value = false
+}
+
+function cancelEditing() {
+  collection.value = collectionSnapshot
+  selectedIds.value = new Set()
+  editing.value = false
+}
 
 const displayCreatures = computed(() => {
   if (ownedFilter.value === 'all') return filteredCreatures.value
@@ -174,7 +214,7 @@ const maxJobLevel = 10
         <div class="ml-auto">
           <button
             class="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
-            @click="editing = true"
+            @click="startEditing"
           >
             <Pencil class="size-4" />
             Edit Collection
@@ -183,14 +223,41 @@ const maxJobLevel = 10
       </template>
 
       <template v-else>
-        <!-- Done (right side) -->
+        <!-- Selected count -->
+        <span class="rounded-full border border-primary/40 bg-primary/10 px-3 py-2 text-sm font-bold text-primary">
+          {{ selectedIds.size }} of {{ displayCreatures.length }} selected
+        </span>
+
+        <!-- Selection -->
+        <button
+          class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
+          @click="selectAllVisible"
+        >
+          <Check class="size-3.5" />
+          Select All
+        </button>
+        <button
+          class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
+          @click="deselectAllVisible"
+        >
+          Clear
+        </button>
+
+        <!-- Done/Cancel (right side) -->
         <div class="ml-auto flex items-center gap-2">
           <button
             class="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition"
-            @click="editing = false"
+            @click="finishEditing"
           >
             <Pencil class="size-4" />
             Done
+          </button>
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-destructive/50 hover:text-destructive"
+            @click="cancelEditing"
+          >
+            <X class="size-3.5" />
+            Cancel
           </button>
         </div>
       </template>
@@ -211,12 +278,14 @@ const maxJobLevel = 10
             <div class="flex flex-wrap justify-evenly gap-8">
           <div v-for="creature in group.creatures" :key="creature.id"
             class="group relative w-[var(--card-w)] cursor-pointer rounded-xl border transition" :class="[
-              isOwned(creature.id)
-                ? 'border-primary/40 ring-1 ring-primary/20'
-                : 'border-border/60 opacity-55',
+              editing && selectedIds.has(creature.id)
+                ? 'ring-2 ring-accent border-accent opacity-100'
+                : isOwned(creature.id)
+                  ? 'border-primary/40 ring-1 ring-primary/20'
+                  : 'border-border/60 opacity-55',
               selectedCreature?.id === creature.id ? 'ring-2 ring-primary/60 border-primary/40 opacity-100' : '',
               editing ? '' : 'hover:-translate-y-0.5 hover:opacity-100 hover:shadow-glow'
-            ]" @click="editing ? toggleOwned(creature.id) : selectCreature(creature)">
+            ]" @click="editing ? toggleSelected(creature.id) : selectCreature(creature)">
             <!-- Type gradient bar -->
             <div class="h-1 rounded-t-xl" :style="{
               background: creature.types.length > 1
@@ -224,8 +293,18 @@ const maxJobLevel = 10
                 : typeColor(creature.types[0])
             }" />
 
+            <!-- Selection indicator (edit mode) -->
+            <div v-if="editing"
+              class="absolute -left-2.5 -top-2.5 z-20 flex size-6 items-center justify-center rounded-md border shadow-sm"
+              :class="selectedIds.has(creature.id)
+                ? 'border-accent bg-accent text-accent-foreground'
+                : 'border-border bg-card text-muted-foreground hover:bg-muted'">
+              <Check v-if="selectedIds.has(creature.id)" class="size-3.5" />
+              <Plus v-else class="size-3.5" />
+            </div>
+
             <!-- Owned check overlay -->
-            <div v-if="isOwned(creature.id)"
+            <div v-if="!editing && isOwned(creature.id)"
               class="absolute left-2 top-3 z-10 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
               <Check class="size-3.5" />
             </div>
