@@ -38,6 +38,9 @@ const {
   setActiveSlot,
   getCreatureSlotRating,
   updateCreatureLevel,
+  expeditionEvaluations,
+  totalXpPerSecond,
+  expeditionTiers,
 } = useExpeditions(creatures.value)
 
 const { collectionLevels, isOwned } = useCreatureCollection()
@@ -286,18 +289,38 @@ function toggleCreatureTier(tier: number) {
             class="focus-ring block w-full border-b border-border/55 px-4 py-3 text-left transition hover:bg-muted/35"
             :class="rowSelected(expedition.id) ? 'bg-primary/20 border-l-2 border-l-primary' : ''"
             @click="chooseExpedition(expedition)">
-            <div class="flex items-start justify-between gap-2">
-              <p class="line-clamp-1 font-semibold text-foreground">{{ expedition.name }}</p>
-              <span class="font-mono text-sm text-primary">{{ expedition.baseRating }}</span>
+            <div class="flex items-center gap-2">
+              <div class="flex min-w-0 flex-1 items-center gap-1.5">
+                <img
+                  v-if="expedition.rewards.length > 0 && getItemImage({ id: expedition.rewards[0].itemId })"
+                  :src="getItemImage({ id: expedition.rewards[0].itemId })"
+                  :alt="expedition.rewards[0].itemId"
+                  class="size-5 shrink-0 object-contain"
+                />
+                <p class="truncate text-sm font-semibold text-foreground">{{ expedition.name }}</p>
+                <span class="shrink-0 rounded bg-muted/50 px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                  T{{ expeditionTiers[expedition.id] || 1 }}
+                </span>
+              </div>
+              <span class="shrink-0 font-mono text-sm text-primary">{{ Math.floor(expedition.baseRating * tierModifiers.difficulty[(expeditionTiers[expedition.id] || 1) - 1]) }}</span>
             </div>
-            <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span>{{ toTitleCase(expedition.biome) }}</span>
-              <span>•</span>
-              <span class="trait-chip" :class="expedition.trait ? '' : 'trait-chip-muted'">
-                {{ expedition.trait ? toTitleCase(expedition.trait) : 'None' }}
+            <div class="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div class="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+                <span>{{ toTitleCase(expedition.biome) }}</span>
+                <span v-if="expedition.trait">•</span>
+                <span v-if="expedition.trait" class="font-semibold">{{ toTitleCase(expedition.trait) }}</span>
+                <template v-if="expeditionEvaluations[expedition.id]">
+                  <span>•</span>
+                  <span :class="expeditionEvaluations[expedition.id]!.scoreRatio >= 1 ? 'text-emerald-400' : 'text-amber-400'">
+                    {{ formatDuration(expeditionEvaluations[expedition.id]!.duration) }}
+                  </span>
+                </template>
+              </div>
+              <span v-if="expeditionEvaluations[expedition.id]"
+                class="shrink-0 font-mono text-xs font-semibold"
+                :class="expeditionEvaluations[expedition.id]!.scoreRatio >= 1 ? 'text-emerald-400' : 'text-amber-400'">
+                {{ expeditionEvaluations[expedition.id]!.xpPerSecond.toFixed(2) }} XP/s
               </span>
-              <span>•</span>
-              <span>{{ formatDuration(expedition.baseDuration) }}</span>
             </div>
           </button>
 
@@ -483,7 +506,7 @@ function toggleCreatureTier(tier: number) {
               <div class="rounded-md bg-card px-2 py-2">
                 <p class="text-muted-foreground">XP Rate</p>
                 <div class="flex items-center justify-center gap-2">
-                  <p class="font-mono text-sm font-semibold">{{ xpPerMinute ? xpPerMinute.toLocaleString() : '—' }}<span
+                  <p class="font-mono text-sm font-semibold">{{ xpPerMinute ? Math.round(xpPerMinute).toLocaleString() : '—' }}<span
                       class="text-[10px] text-muted-foreground">/m</span></p>
                   <div class="h-4 border-l border-border/50" />
                   <p class="font-mono text-sm font-semibold">{{ xpPerMinute ? (xpPerMinute / 60).toFixed(2) : '—'
