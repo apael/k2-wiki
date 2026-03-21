@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
-import { Check, Compass, Info, Minus, Plus, Target, X } from 'lucide-vue-next'
+import { Check, Compass, FileDown, FileUp, Info, Minus, Plus, RotateCcw, Target, X } from 'lucide-vue-next'
 import { useCreatures } from '@/composables/useCreatures'
 import { useExpeditions } from '@/composables/useExpeditions'
 import { useCreatureCollection } from '@/composables/useCreatureCollection'
@@ -40,6 +40,9 @@ const {
   updateCreatureLevel,
   expeditionEvaluations,
   totalXpPerSecond,
+  resetAllExpeditions,
+  exportSetup,
+  importSetup,
   expeditionTiers,
 } = useExpeditions(creatures.value)
 
@@ -50,6 +53,12 @@ const creatureSearch = ref('')
 const selectedCreatureTypes = ref<ElementType[]>([...creatureTypes])
 const selectedCreatureTiers = ref<number[]>([])
 const ownedOnly = ref(false)
+
+function handleReset() {
+  if (window.confirm('Reset all expedition parties and creature levels?')) {
+    resetAllExpeditions()
+  }
+}
 
 type MobileSection = 'list' | 'details' | 'creature'
 
@@ -281,7 +290,33 @@ function toggleCreatureTier(tier: number) {
       <section class="surface-card flex flex-col overflow-hidden"
         :class="!isDesktop && mobileSection !== 'list' ? 'hidden' : ''">
         <div class="flex items-center justify-between border-b border-border/70 px-4 py-3">
-          <h2 class="text-base font-bold">Expeditions</h2>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold">Expeditions</h2>
+            <span v-if="totalXpPerSecond > 0"
+              class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-400">
+              {{ totalXpPerSecond.toFixed(2) }} XP/s
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              class="focus-ring rounded-lg p-1.5 text-muted-foreground transition hover:text-foreground"
+              title="Import"
+              @click="openImportModal">
+              <FileUp class="size-5" />
+            </button>
+            <button
+              class="focus-ring rounded-lg p-1.5 text-muted-foreground transition hover:text-foreground"
+              title="Export"
+              @click="openExportModal">
+              <FileDown class="size-5" />
+            </button>
+            <button
+              class="focus-ring rounded-lg p-1.5 text-muted-foreground transition hover:text-destructive"
+              title="Reset All"
+              @click="handleReset">
+              <RotateCcw class="size-5" />
+            </button>
+          </div>
         </div>
 
         <div class="max-h-[62vh] overflow-y-auto lg:min-h-0 lg:max-h-none lg:flex-1">
