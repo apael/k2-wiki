@@ -58,6 +58,43 @@ export function useExpeditions(creatures: Creature[]) {
     return ids
   })
 
+  const expeditionEvaluations = computed(() => {
+    const result: Record<string, { xpPerCreature: number, xpPerSecond: number, duration: number, scoreRatio: number } | null> = {}
+    for (const exp of expeditions.value) {
+      result[exp.id] = evaluateExpedition(exp)
+    }
+    return result
+  })
+
+  const totalXpPerSecond = computed(() => {
+    let sum = 0
+    for (const exp of expeditions.value) {
+      const evaluation = expeditionEvaluations.value[exp.id]
+      if (evaluation) {
+        sum += evaluation.xpPerSecond
+      }
+    }
+    return sum
+  })
+
+  function evaluateExpedition(exp: Expedition): { xpPerCreature: number, xpPerSecond: number, duration: number, scoreRatio: number } | null {
+    const partyIds = expeditionParties.value[exp.id]
+    if (!partyIds || partyIds.length === 0) return null
+    const partyCreatures = partyIds.map(id => creatures.find(c => c.id === id)).filter((c): c is Creature => c !== null)
+    if (partyCreatures.length === 0) return null
+
+    const biome = getBiome(exp.biome)
+    const tier = expeditionTiers.value[exp.id] || 1
+    const score = calculatePartyScore(partyCreatures, exp, creatureLevels.value, biome)
+    const diff = calculateDifficultyRating(exp, tier)
+    const duration = calculateDuration(score, exp, tier)
+    const activeCreatures = partyCreatures.length
+    const xpPerCreature = calculateExpeditionXp(exp, tier, loopCount.value, activeCreatures)
+    const xpPerSecond = duration > 0 ? xpPerCreature / duration : 0
+
+    return { xpPerCreature, xpPerSecond, duration, scoreRatio: diff > 0 ? score / diff : 0 }
+  }
+
   // Restore party slots and tier when expedition changes
   watch(selectedExpedition, (exp) => {
     if (exp) {
@@ -183,7 +220,7 @@ export function useExpeditions(creatures: Creature[]) {
 
   const xpPerMinute = computed(() => {
     if (!totalXp.value || !estimatedDuration.value || estimatedDuration.value <= 0) return null
-    return Math.round(totalXp.value / (estimatedDuration.value / 60))
+    return totalXp.value / (estimatedDuration.value / 60)
   })
 
   const levelsGained = computed(() => {
@@ -260,6 +297,46 @@ export function useExpeditions(creatures: Creature[]) {
     return Array.from(ids).sort()
   })
 
+  function exportSetup(): string {
+    return JSON.stringify({
+      parties: expeditionParties.value,
+      levels: creatureLevels.value,
+    })
+  }
+
+  function importSetup(json: string): boolean {
+    try {
+      const data = JSON.parse(json)
+      if (data.parties && typeof data.parties === 'object') {
+        expeditionParties.value = data.parties
+      }
+      if (data.levels && typeof data.levels === 'object') {
+        creatureLevels.value = data.levels
+      }
+      // Refresh current view
+      if (selectedExpedition.value) {
+        const ids = expeditionParties.value[selectedExpedition.value.id] || []
+        partySlots.value = Array(selectedExpedition.value.maxPartySize).fill(null).map((_, i) => {
+          const id = ids[i]
+          return id ? creatures.find(c => c.id === id) ?? null : null
+        })
+      }
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  function resetAllExpeditions() {
+    expeditionParties.value = {}
+    creatureLevels.value = {}
+    expeditionTiers.value = {}
+    selectedTier.value = 1
+    if (selectedExpedition.value) {
+      partySlots.value = Array(selectedExpedition.value.maxPartySize).fill(null)
+    }
+  }
+
   return {
     expeditions,
     filteredExpeditions,
@@ -292,6 +369,11 @@ export function useExpeditions(creatures: Creature[]) {
     updateCreatureLevel,
     uniqueBiomes,
     allAssignedCreatureIds,
+    expeditionEvaluations,
+    totalXpPerSecond,
+    exportSetup,
+    importSetup,
+    resetAllExpeditions,
     expeditionTiers,
     expeditionParties,
   }
