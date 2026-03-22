@@ -228,6 +228,7 @@ export interface PlannerSchedule {
 export interface CreatureCollectionEntry {
   owned: boolean
   level: number // 1-120
+  awakened: boolean
 }
 
 export type CreatureStatKey = keyof CreatureStats
