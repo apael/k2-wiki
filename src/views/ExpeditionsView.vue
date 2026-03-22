@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@vueuse/core'
 import { Check, ClipboardPaste, Compass, Copy, Download, FileDown, FileUp, FolderOpen, Info, Minus, Plus, RotateCcw, Target, X } from 'lucide-vue-next'
+import summonedIcon from '@/assets/icons/summoned.png'
 import { useCreatures } from '@/composables/useCreatures'
 import { useExpeditions } from '@/composables/useExpeditions'
 import { useCreatureCollection } from '@/composables/useCreatureCollection'
@@ -46,7 +47,7 @@ const {
   expeditionTiers,
 } = useExpeditions(creatures.value)
 
-const { collectionLevels, isOwned } = useCreatureCollection()
+const { collectionLevels, isOwned, isAwakened } = useCreatureCollection()
 
 const creatureTypes: ElementType[] = ['Fire', 'Water', 'Wind', 'Earth']
 const creatureSearch = ref('')
@@ -729,8 +730,9 @@ function toggleCreatureTier(tier: number) {
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <button class="pill focus-ring" :class="ownedOnly ? 'pill-active' : ''"
+            <button class="pill focus-ring gap-1.5" :class="ownedOnly ? 'pill-active' : ''"
               @click="ownedOnly = !ownedOnly">
+              <img :src="summonedIcon" alt="" class="size-4" />
               Summoned Only
             </button>
           </div>
@@ -761,16 +763,13 @@ function toggleCreatureTier(tier: number) {
               <div class="relative shrink-0">
                 <img :src="getCreatureImage(creature)" :alt="`${creature.name} artwork`"
                   class="size-10 rounded-md border border-border object-cover" />
-                <span
-                  v-if="isOwned(creature.id)"
-                  class="absolute -left-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
-                >
-                  <Check class="size-2.5" />
-                </span>
               </div>
 
               <div class="min-w-0 flex-1">
-                <p class="truncate font-semibold text-foreground">{{ creature.name }}</p>
+                <div class="flex items-center gap-1">
+                  <p class="truncate font-semibold" :class="isAwakened(creature.id) ? 'text-pink-400' : 'text-foreground'">{{ creature.name }}</p>
+                  <span v-if="isOwned(creature.id)" class="text-xs" :class="isAwakened(creature.id) ? 'text-pink-400' : 'text-amber-400'">★</span>
+                </div>
                 <div class="mt-1 flex flex-wrap gap-1 text-xs">
                   <span v-for="type in creature.types" :key="type"
                     class="rounded-full bg-muted px-2 py-0.5 font-semibold" :style="{ color: typeColor(type) }">

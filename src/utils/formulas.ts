@@ -148,6 +148,13 @@ export function getLootAmount(baseAmount: number, tier: number): number {
   return baseAmount * tierModifiers.loot[tier - 1]
 }
 
+export const PRE_AWAKEN_MAX = 70
+export const POST_AWAKEN_MAX = 120
+
+export function maxLevelForState(awakened: boolean): number {
+  return awakened ? POST_AWAKEN_MAX : PRE_AWAKEN_MAX
+}
+
 export function xpForLevel(level: number): number {
   if (level <= 1) return 0
   return 50 * level * level

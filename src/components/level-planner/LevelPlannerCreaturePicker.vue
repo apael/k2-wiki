@@ -16,7 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const { creatures } = useCreatures()
-const { ownedCreatureIds, getLevel } = useCreatureCollection()
+const { ownedCreatureIds, getLevel, isAwakened } = useCreatureCollection()
 
 const query = ref('')
 const open = ref(false)
@@ -92,10 +92,11 @@ function close() {
         />
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-1.5">
-            <p class="truncate text-base font-semibold text-foreground">{{ selected.name }}</p>
+            <p class="truncate text-base font-semibold" :class="isAwakened(selected.id) ? 'text-pink-400' : 'text-foreground'">{{ selected.name }}</p>
+            <span v-if="ownedCreatureIds.has(selected.id)" class="text-xs" :class="isAwakened(selected.id) ? 'text-pink-400' : 'text-amber-400'">★</span>
             <span v-for="type in selected.types" :key="type" class="size-2 rounded-full" :style="{ backgroundColor: typeColor(type) }" />
           </div>
-          <p class="text-xs text-muted-foreground/80">LVL {{ getLevel(selected.id) }}</p>
+          <p class="text-xs text-muted-foreground/80">LVL {{ getLevel(selected.id) }}<span v-if="isAwakened(selected.id)" class="ml-1 text-pink-400">★</span></p>
         </div>
       </template>
       <template v-else>
@@ -146,9 +147,12 @@ function close() {
             :style="{ backgroundColor: `hsl(${typeColorVar(creature.types[0])} / 0.1)` }"
           />
           <div class="min-w-0 flex-1">
-            <p class="truncate text-[15px] font-semibold text-foreground">{{ creature.name }}</p>
+            <div class="flex items-center gap-1">
+              <p class="truncate text-[15px] font-semibold" :class="isAwakened(creature.id) ? 'text-pink-400' : 'text-foreground'">{{ creature.name }}</p>
+              <span v-if="ownedCreatureIds.has(creature.id)" class="text-xs" :class="isAwakened(creature.id) ? 'text-pink-400' : 'text-amber-400'">★</span>
+            </div>
             <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span v-if="ownedCreatureIds.has(creature.id)">LVL {{ getLevel(creature.id) }}</span>
+              <span v-if="ownedCreatureIds.has(creature.id)">LVL {{ getLevel(creature.id) }}<span v-if="isAwakened(creature.id)" class="ml-1 text-pink-400">★</span></span>
               <span v-else class="italic">Not summoned</span>
               <span>·</span>
               <span v-for="type in creature.types" :key="type" :style="{ color: typeColor(type) }">{{ type }}</span>
