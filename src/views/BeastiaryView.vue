@@ -2,12 +2,13 @@
 import { computed, ref, watch } from 'vue'
 import { Check, Minus, Pencil, Plus, TrendingUp, X } from 'lucide-vue-next'
 import summonedIcon from '@/assets/icons/summoned.png'
+import awakenedSummonedIcon from '@/assets/icons/awakened_summoned.png'
 import notSummonedIcon from '@/assets/icons/not_summoned.png'
 import { useCreatures } from '@/composables/useCreatures'
 import { useCreatureCollection } from '@/composables/useCreatureCollection'
 import type { Creature, CreatureStats, Jobs } from '@/types'
 import { getCreatureImage } from '@/utils/creatureImages'
-import { jobColors, jobLabels, statLabels, getBestExpeditionsForCreature } from '@/utils/formulas'
+import { jobColors, jobLabels, statLabels, getBestExpeditionsForCreature, maxLevelForState } from '@/utils/formulas'
 import { toTitleCase, typeColor, typeColorVar } from '@/utils/format'
 import { getItemImage } from '@/utils/itemImages'
 import { useItems } from '@/composables/useItems'
@@ -28,9 +29,10 @@ const {
   allJobs,
 } = useCreatures()
 
-const { collection, isOwned, setOwned, getLevel, toggleOwned, setLevel, ownedCreatureIds } = useCreatureCollection()
+const { collection, isOwned, setOwned, getLevel, toggleOwned, setLevel, ownedCreatureIds, isAwakened, setAwakened } = useCreatureCollection()
 
 const ownedFilter = ref<'all' | 'owned' | 'unowned'>('all')
+const awakenedFilter = ref<'all' | 'awakened' | 'unawakened'>('all')
 const editing = ref(false)
 const bulkLevel = ref(1)
 
@@ -72,6 +74,12 @@ function bulkApplyLevel() {
   }
 }
 
+function bulkSetAwakened(awakened: boolean) {
+  for (const id of selectedIds.value) {
+    if (isOwned(id)) setAwakened(id, awakened)
+  }
+}
+
 // Snapshot collection on edit enter, restore on cancel
 let collectionSnapshot: Record<string, any> = {}
 
@@ -92,10 +100,13 @@ function cancelEditing() {
 }
 
 const displayCreatures = computed(() => {
-  if (ownedFilter.value === 'all') return filteredCreatures.value
-  return filteredCreatures.value.filter(c =>
-    ownedFilter.value === 'owned' ? isOwned(c.id) : !isOwned(c.id)
-  )
+  return filteredCreatures.value.filter(c => {
+    if (ownedFilter.value === 'owned' && !isOwned(c.id)) return false
+    if (ownedFilter.value === 'unowned' && isOwned(c.id)) return false
+    if (awakenedFilter.value === 'awakened' && !isAwakened(c.id)) return false
+    if (awakenedFilter.value === 'unawakened' && isAwakened(c.id)) return false
+    return true
+  })
 })
 
 const groupedByTier = computed(() => {
@@ -221,7 +232,7 @@ const maxJobLevel = 10
   <section class="space-y-5 lg:space-y-6">
     <BeastiaryToolbar v-model:search-query="searchQuery" v-model:type-filter="typeFilter"
       v-model:tier-filter="tierFilter" v-model:trait-filter="traitFilter" v-model:job-filter="jobFilter"
-      v-model:view-mode="viewMode" v-model:owned-filter="ownedFilter"
+      v-model:view-mode="viewMode" v-model:owned-filter="ownedFilter" v-model:awakened-filter="awakenedFilter"
       :owned-count="ownedCount" :result-count="displayCreatures.length"
       :trait-options="allTraits" :job-options="allJobs" />
 
@@ -230,7 +241,7 @@ const maxJobLevel = 10
       <template v-if="!editing">
         <div class="ml-auto">
           <button
-            class="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
+            class="focus-ring inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
             @click="startEditing"
           >
             <Pencil class="size-4" />
@@ -240,113 +251,129 @@ const maxJobLevel = 10
       </template>
 
       <template v-else>
-        <!-- Selected count -->
-        <span class="rounded-full border border-primary/40 bg-primary/10 px-3 py-2 text-sm font-bold text-primary">
+        <!-- Row 1: Selection + Done/Cancel -->
+        <span class="inline-flex h-9 items-center rounded-full border border-primary/40 bg-primary/10 px-3 text-sm font-bold text-primary">
           {{ selectedIds.size }} of {{ displayCreatures.length }} selected
         </span>
 
-        <!-- Selection -->
         <button
-          class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
+          class="focus-ring inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
           @click="selectAllVisible"
         >
-          <Check class="size-3.5" />
+          <Check class="size-4" />
           Select All
         </button>
         <button
-          class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
+          class="focus-ring inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground"
           @click="deselectAllVisible"
         >
           Clear
         </button>
 
-        <!-- Divider -->
-        <div class="h-8 w-0.5 rounded-full bg-muted-foreground/30" />
-
-        <!-- Summoning actions -->
-        <button
-          class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-          :disabled="!selectedIds.size"
-          @click="bulkSetSummoned(true)"
-        >
-          <img :src="summonedIcon" alt="" class="size-4" />
-          Summoned
-        </button>
-        <button
-          class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-          :disabled="!selectedIds.size"
-          @click="bulkSetSummoned(false)"
-        >
-          <img :src="notSummonedIcon" alt="" class="size-4" />
-          Not Summoned
-        </button>
-
-        <!-- Divider -->
-        <div class="h-8 w-0.5 rounded-full bg-muted-foreground/30" />
-
-        <!-- Level -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-xs font-semibold text-muted-foreground">LVL</span>
-          <button
-            class="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-            :disabled="bulkLevel <= 1"
-            aria-label="Decrease bulk level"
-            @click="bulkLevel = Math.max(1, bulkLevel - 1)"
-          >
-            <Minus class="size-3.5" />
-          </button>
-          <input
-            type="text"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            class="focus-ring h-8 w-11 rounded-md border border-input bg-background/85 text-center text-sm font-mono font-semibold"
-            :value="bulkLevel"
-            aria-label="Bulk level"
-            @blur="bulkLevel = Math.max(1, Math.min(120, Math.round(Number(($event.target as HTMLInputElement).value) || 1)))"
-            @keydown.enter="($event.target as HTMLInputElement).blur()"
-          />
-          <button
-            class="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-            :disabled="bulkLevel >= 120"
-            aria-label="Increase bulk level"
-            @click="bulkLevel = Math.min(120, bulkLevel + 1)"
-          >
-            <Plus class="size-3.5" />
-          </button>
-          <input
-            type="range"
-            min="1"
-            max="120"
-            :value="bulkLevel"
-            class="level-slider h-1.5 w-32 min-w-0 cursor-pointer"
-            aria-label="Bulk level slider"
-            @input="bulkLevel = +($event.target as HTMLInputElement).value"
-          />
-          <button
-            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-            :disabled="!selectedIds.size"
-            @click="bulkApplyLevel"
-          >
-            Set Level
-          </button>
-        </div>
-
-        <!-- Done/Cancel (right side) -->
         <div class="ml-auto flex items-center gap-2">
           <button
-            class="focus-ring inline-flex items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-glow transition"
+            class="focus-ring inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground transition"
             @click="finishEditing"
           >
             <Pencil class="size-4" />
             Done
           </button>
           <button
-            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-destructive/50 hover:text-destructive"
+            class="focus-ring inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-muted-foreground transition hover:border-destructive/50 hover:text-destructive"
             @click="cancelEditing"
           >
-            <X class="size-3.5" />
+            <X class="size-4" />
             Cancel
           </button>
+        </div>
+
+        <!-- Row 2: Bulk actions -->
+        <div class="flex w-full flex-wrap items-center gap-2 border-t border-border/60 pt-2">
+          <!-- Summoning -->
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!selectedIds.size"
+            @click="bulkSetSummoned(true)"
+          >
+            <img :src="summonedIcon" alt="" class="size-4" />
+            Summoned
+          </button>
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!selectedIds.size"
+            @click="bulkSetSummoned(false)"
+          >
+            <img :src="notSummonedIcon" alt="" class="size-4" />
+            Not Summoned
+          </button>
+
+          <div class="h-8 w-0.5 rounded-full bg-muted-foreground/30" />
+
+          <!-- Awakening -->
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-pink-500/50 hover:text-pink-400 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!selectedIds.size"
+            @click="bulkSetAwakened(true)"
+          >
+            <img :src="awakenedSummonedIcon" alt="" class="size-4" />
+            Awaken
+          </button>
+          <button
+            class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!selectedIds.size"
+            @click="bulkSetAwakened(false)"
+          >
+            Unawaken
+          </button>
+
+          <div class="h-8 w-0.5 rounded-full bg-muted-foreground/30" />
+
+          <!-- Level -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-muted-foreground">LVL</span>
+            <button
+              class="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              :disabled="bulkLevel <= 1"
+              aria-label="Decrease bulk level"
+              @click="bulkLevel = Math.max(1, bulkLevel - 1)"
+            >
+              <Minus class="size-3.5" />
+            </button>
+            <input
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              class="focus-ring h-8 w-11 rounded-md border border-input bg-background/85 text-center text-sm font-mono font-semibold"
+              :value="bulkLevel"
+              aria-label="Bulk level"
+              @blur="bulkLevel = Math.max(1, Math.min(120, Math.round(Number(($event.target as HTMLInputElement).value) || 1)))"
+              @keydown.enter="($event.target as HTMLInputElement).blur()"
+            />
+            <button
+              class="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              :disabled="bulkLevel >= 120"
+              aria-label="Increase bulk level"
+              @click="bulkLevel = Math.min(120, bulkLevel + 1)"
+            >
+              <Plus class="size-3.5" />
+            </button>
+            <input
+              type="range"
+              min="1"
+              max="120"
+              :value="bulkLevel"
+              class="level-slider h-1.5 w-32 min-w-0 cursor-pointer"
+              aria-label="Bulk level slider"
+              @input="bulkLevel = +($event.target as HTMLInputElement).value"
+            />
+            <button
+              class="focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:border-accent/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              :disabled="!selectedIds.size"
+              @click="bulkApplyLevel"
+            >
+              Set Level
+            </button>
+          </div>
         </div>
       </template>
     </div>
@@ -369,7 +396,9 @@ const maxJobLevel = 10
               editing && selectedIds.has(creature.id)
                 ? 'ring-2 ring-accent border-accent opacity-100'
                 : isOwned(creature.id)
-                  ? 'border-primary/40 ring-1 ring-primary/20'
+                  ? isAwakened(creature.id)
+                    ? 'border-pink-500/40 ring-1 ring-pink-500/20'
+                    : 'border-primary/40 ring-1 ring-primary/20'
                   : 'border-border/60 opacity-55',
               selectedCreature?.id === creature.id ? 'ring-2 ring-primary/60 border-primary/40 opacity-100' : '',
               editing ? '' : 'hover:-translate-y-0.5 hover:opacity-100 hover:shadow-glow'
@@ -393,8 +422,8 @@ const maxJobLevel = 10
 
             <!-- Summoned status icon -->
             <img
-              :src="isOwned(creature.id) ? summonedIcon : notSummonedIcon"
-              :alt="isOwned(creature.id) ? 'Summoned' : 'Not summoned'"
+              :src="isOwned(creature.id) ? (isAwakened(creature.id) ? awakenedSummonedIcon : summonedIcon) : notSummonedIcon"
+              :alt="isOwned(creature.id) ? (isAwakened(creature.id) ? 'Awakened' : 'Summoned') : 'Not summoned'"
               class="absolute left-2.5 top-3.5 z-10 size-5 drop-shadow-md"
             />
 
@@ -428,9 +457,9 @@ const maxJobLevel = 10
             <!-- Footer info -->
             <div class="space-y-2 rounded-b-xl bg-card/80 px-3 pb-3 pt-2.5">
               <div class="text-center">
-                <p class="truncate text-lg font-extrabold text-foreground">{{ creature.name }}</p>
-                <p v-if="!editing && isOwned(creature.id)" class="font-mono text-[10px] text-muted-foreground">
-                  LVL {{ getLevel(creature.id) }}
+                <p class="truncate text-lg font-extrabold" :class="isAwakened(creature.id) ? 'text-pink-400' : 'text-foreground'">{{ creature.name }}</p>
+                <p v-if="!editing && isOwned(creature.id)" class="font-mono text-xs text-foreground/80">
+                  LVL <span class="font-bold text-foreground">{{ getLevel(creature.id) }}</span><span class="text-muted-foreground">/{{ maxLevelForState(isAwakened(creature.id)) }}</span>
                 </p>
               </div>
 
@@ -458,7 +487,7 @@ const maxJobLevel = 10
                   />
                   <button
                     class="focus-ring inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                    :disabled="getLevel(creature.id) >= 120"
+                    :disabled="getLevel(creature.id) >= maxLevelForState(isAwakened(creature.id))"
                     aria-label="Increase level"
                     @click="stepCollectionLevel(creature.id, 1)"
                   >
@@ -469,12 +498,23 @@ const maxJobLevel = 10
                 <input
                   type="range"
                   min="1"
-                  max="120"
+                  :max="maxLevelForState(isAwakened(creature.id))"
                   :value="getLevel(creature.id)"
                   class="level-slider h-1.5 w-full cursor-pointer"
                   aria-label="Level slider"
                   @input="setLevel(creature.id, +($event.target as HTMLInputElement).value)"
                 />
+                <!-- Awakened toggle -->
+                <button
+                  class="flex w-full items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-semibold transition"
+                  :class="isAwakened(creature.id)
+                    ? 'border-pink-500/40 bg-pink-500/10 text-pink-400'
+                    : 'border-border/60 bg-muted/20 text-muted-foreground hover:text-foreground'"
+                  @click="setAwakened(creature.id, !isAwakened(creature.id))"
+                >
+                  <span>&#9733;</span>
+                  {{ isAwakened(creature.id) ? 'Awakened' : 'Awaken' }}
+                </button>
               </div>
             </div>
           </div>
@@ -562,7 +602,8 @@ const maxJobLevel = 10
                           loading="lazy" />
                         <span v-else>{{ creature.name.charAt(0) }}</span>
                       </div>
-                      <span class="font-semibold text-foreground">{{ creature.name }}</span>
+                      <span class="font-semibold" :class="isAwakened(creature.id) ? 'text-pink-400' : 'text-foreground'">{{ creature.name }}</span>
+                      <span v-if="isOwned(creature.id)" class="ml-1 text-xs" :class="isAwakened(creature.id) ? 'text-pink-400' : 'text-amber-400'">★</span>
                     </div>
                   </td>
                   <td class="px-2 py-2.5 font-mono text-xs text-muted-foreground">T{{ creature.tier + 1 }}</td>
@@ -685,12 +726,30 @@ const maxJobLevel = 10
                       @blur="normalizeCollectionLevelOnBlur(selectedCreature.id, $event)" />
                     <button
                       class="focus-ring inline-flex h-7 w-7 items-center justify-center text-muted-foreground transition hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                      :disabled="getLevel(selectedCreature.id) >= 120" aria-label="Increase creature level"
+                      :disabled="getLevel(selectedCreature.id) >= maxLevelForState(isAwakened(selectedCreature.id))" aria-label="Increase creature level"
                       @click="stepCollectionLevel(selectedCreature.id, 1)">
                       <Plus class="size-3" />
                     </button>
                   </div>
                 </div>
+                <label
+                  v-if="isOwned(selectedCreature.id)"
+                  class="flex cursor-pointer items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5"
+                >
+                  <div>
+                    <span class="text-sm font-medium text-foreground">Awakened</span>
+                    <p class="text-[11px] text-muted-foreground">
+                      {{ isAwakened(selectedCreature.id) ? 'Cap raised to 120. Un-awaken to clamp to 70.' : 'Raises level cap to 120.' }}
+                    </p>
+                  </div>
+                  <button role="switch" :aria-checked="isAwakened(selectedCreature.id)"
+                    class="focus-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors"
+                    :class="isAwakened(selectedCreature.id) ? 'bg-pink-500' : 'bg-muted'"
+                    @click="setAwakened(selectedCreature.id, !isAwakened(selectedCreature.id))">
+                    <span class="inline-block size-4 rounded-full bg-white shadow-sm transition-transform"
+                      :class="isAwakened(selectedCreature.id) ? 'translate-x-6' : 'translate-x-1'" />
+                  </button>
+                </label>
               </div>
             </section>
 
