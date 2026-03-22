@@ -8,9 +8,17 @@ import type { Creature } from '@/types'
 import { getCreatureImage } from '@/utils/creatureImages'
 import { typeColor, typeColorVar } from '@/utils/format'
 
-const props = defineProps<{
-  modelValue: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    ownedOnly?: boolean
+    excludeIds?: Set<string>
+  }>(),
+  {
+    ownedOnly: false,
+    excludeIds: () => new Set<string>(),
+  },
+)
 
 
 const emit = defineEmits<{
@@ -40,14 +48,17 @@ watch(open, async (isOpen) => {
 })
 
 
-const sortedCreatures = computed(() =>
-  [...creatures.value].toSorted((a, b) => {
+const sortedCreatures = computed(() => {
+  let list = [...creatures.value]
+  if (props.ownedOnly) list = list.filter((c) => ownedCreatureIds.value.has(c.id))
+  if (props.excludeIds.size > 0) list = list.filter((c) => !props.excludeIds.has(c.id))
+  return list.toSorted((a, b) => {
     const aOwned = ownedCreatureIds.value.has(a.id) ? 0 : 1
     const bOwned = ownedCreatureIds.value.has(b.id) ? 0 : 1
     if (aOwned !== bOwned) return aOwned - bOwned
     return a.name.localeCompare(b.name)
-  }),
-)
+  })
+})
 
 
 const filtered = computed(() => {

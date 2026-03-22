@@ -84,8 +84,42 @@ function forwardPinMethod(nodeId: string, methodId: string) {
 </script>
 
 <template>
-  <div v-if="!node.fulfilled">
+  <div>
+    <!-- Fulfilled (fully stocked) node — compact indicator -->
+    <div
+      v-if="node.fulfilled"
+      class="flex w-full items-center gap-3 rounded-lg border border-emerald-400/20 bg-emerald-400/5 px-3 py-2 opacity-70"
+    >
+      <div
+        class="flex size-7 shrink-0 items-center justify-center rounded-md"
+        :style="{
+          backgroundColor: `color-mix(in oklch, ${itemTypeColor(node.itemType)} 8%, transparent)`,
+        }"
+      >
+        <img
+          v-if="getItemImage({ id: node.itemId })"
+          :src="getItemImage({ id: node.itemId })"
+          :alt="node.itemName"
+          class="size-5 object-contain"
+        />
+        <span v-else class="text-[10px] font-bold" :style="{ color: itemTypeColor(node.itemType) }">
+          {{ node.itemName.charAt(0) }}
+        </span>
+      </div>
+      <span class="min-w-0 truncate text-sm font-semibold text-muted-foreground">{{
+        node.itemName
+      }}</span>
+      <CheckCircle2 class="size-4 shrink-0 text-emerald-400" />
+      <span
+        class="bg-emerald-400/8 shrink-0 rounded-full border border-emerald-400/30 px-2 py-0.5 text-[11px] font-semibold text-emerald-400"
+      >
+        In stock
+      </span>
+    </div>
+
+    <!-- Normal (unfulfilled) node -->
     <button
+      v-else
       class="group flex w-full min-w-0 flex-row items-stretch overflow-hidden rounded-lg border border-border/40 text-left outline-none transition-colors"
       :class="[isSelected ? 'bg-primary/6 border-border/60' : 'hover:bg-muted/30']"
       :style="
@@ -221,7 +255,7 @@ function forwardPinMethod(nodeId: string, methodId: string) {
     </button>
 
     <div
-      v-if="hasChildren && !isCollapsed"
+      v-if="!node.fulfilled && hasChildren && !isCollapsed"
       class="ml-4 flex flex-col border-l-2 border-border/25 pl-4"
       :style="{ gap: childrenGap, paddingTop: childrenGap }"
     >
@@ -243,7 +277,10 @@ function forwardPinMethod(nodeId: string, methodId: string) {
       />
     </div>
 
-    <div v-if="hasChildren && isCollapsed" class="ml-4 border-l-2 border-border/25 py-1 pl-4">
+    <div
+      v-if="!node.fulfilled && hasChildren && isCollapsed"
+      class="ml-4 border-l-2 border-border/25 py-1 pl-4"
+    >
       <span class="text-xs italic text-muted-foreground/60">
         ... {{ activeMethod!.children.length }} items hidden
       </span>
