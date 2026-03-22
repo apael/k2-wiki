@@ -16,9 +16,12 @@ const props = defineProps<{
 }>()
 
 
+const treeItemIds = computed(() => new Set(props.treeItems.map((i) => i.itemId)))
+
+
 const stockedItems = computed(() =>
   Object.entries(props.inventoryAmounts)
-    .filter(([, amount]) => amount > 0)
+    .filter(([itemId, amount]) => amount > 0 && treeItemIds.value.has(itemId))
     .map(([itemId, amount]) => ({
       itemId,
       itemName: props.treeItems.find((i) => i.itemId === itemId)?.itemName ?? itemId,
@@ -70,7 +73,7 @@ const activeSpeedTiers = computed(() =>
     .filter(([, tier]) => tier > 0)
     .map(([workstation, tier]) => ({
       workstation,
-      pct: tier * 5,
+      pct: tier * 10,
     })),
 )
 
@@ -85,7 +88,7 @@ const activeJobTiers = computed(() =>
 )
 
 
-const isOpen = ref(true)
+const isOpen = ref(false)
 
 
 const activeCount = computed(
@@ -269,7 +272,7 @@ const hasAnything = computed(() => activeCount.value > 0)
             />
             <span class="min-w-0 text-sm text-foreground">{{ ws.workstation }}</span>
             <span class="ml-auto shrink-0 text-xs font-semibold" style="color: hsl(var(--primary))">
-              -{{ ws.pct }}%
+              +{{ ws.pct }}%
             </span>
           </div>
         </div>

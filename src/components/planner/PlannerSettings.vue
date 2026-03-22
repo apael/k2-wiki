@@ -35,7 +35,6 @@ const isOpen = ref(false)
 const inventoryOpen = ref(false)
 const gardenOpen = ref(false)
 const awakenOpen = ref(false)
-const jobTiersOpen = ref(false)
 
 
 function applyInventory(itemId: string, event: Event) {
@@ -132,9 +131,36 @@ function tierLabel(tier: number, perTier: number): string {
 }
 
 
-// Job Tiers
+function speedTierLabel(tier: number, perTier: number): string {
+  const pct = tier * perTier
+  return pct > 0 ? `+${pct}%` : 'None'
+}
+
+
+// Job Tiers (temporary simulation overrides)
 const jobs = ['Chopping', 'Mining', 'Digging', 'Exploring', 'Fishing', 'Farming']
-const jobTierLabels = ['None', '-10%', '-20%']
+const jobTiersOpen = ref(false)
+
+
+const JOB_TIER_BENEFITS = [
+  { xpBonus: 0, durationReduction: 0, yieldBonus: 0 },
+  { xpBonus: 20, durationReduction: 0, yieldBonus: 0 },
+  { xpBonus: 20, durationReduction: 10, yieldBonus: 0 },
+  { xpBonus: 40, durationReduction: 10, yieldBonus: 0 },
+  { xpBonus: 40, durationReduction: 20, yieldBonus: 0 },
+  { xpBonus: 40, durationReduction: 20, yieldBonus: 1 },
+]
+
+
+function jobTierLabel(tier: number): string {
+  const b = JOB_TIER_BENEFITS[tier] ?? JOB_TIER_BENEFITS[0]
+  if (tier === 0) return 'No bonuses'
+  const parts: string[] = []
+  if (b.xpBonus > 0) parts.push(`+${b.xpBonus}% XP`)
+  if (b.durationReduction > 0) parts.push(`-${b.durationReduction}% Dur`)
+  if (b.yieldBonus > 0) parts.push(`+${b.yieldBonus} Yield`)
+  return parts.join(', ')
+}
 
 
 const hasJobChanges = computed(() => Object.values(props.jobTiers).some((t) => t > 0))
@@ -169,6 +195,16 @@ const hasAnyChanges = computed(
     </div>
 
     <div v-if="isOpen" class="border-t border-border/40">
+      <!-- Callout -->
+      <div class="mx-4 mt-3 rounded-lg border border-border/40 bg-muted/10 px-3 py-2">
+        <p class="text-[11px] leading-relaxed text-muted-foreground">
+          Settings are loaded from
+          <RouterLink to="/configs" class="font-semibold text-primary hover:underline"
+            >/configs</RouterLink
+          >. Changes here are temporary for simulation and will not persist on refresh.
+        </p>
+      </div>
+
       <!-- Inventory Section -->
       <div class="px-4 py-3">
         <div class="flex items-center justify-between">
@@ -475,7 +511,7 @@ const hasAnyChanges = computed(
                 <img v-if="sourceIcons[ws]" :src="sourceIcons[ws]" alt="" class="size-4 shrink-0" />
                 <span class="min-w-0 flex-1 text-xs font-semibold text-foreground">{{ ws }}</span>
                 <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-semibold text-muted-foreground">Duration</span>
+                  <span class="text-[10px] font-semibold text-muted-foreground">Speed</span>
                   <div class="flex items-center gap-1">
                     <button
                       v-for="t in 5"
@@ -495,7 +531,7 @@ const hasAnyChanges = computed(
                     class="w-10 text-right text-[10px] font-semibold"
                     :style="{ color: (awakenSpeedTiers[ws] ?? 0) > 0 ? 'var(--color-green)' : '' }"
                   >
-                    {{ tierLabel(awakenSpeedTiers[ws] ?? 0, 5) }}
+                    {{ speedTierLabel(awakenSpeedTiers[ws] ?? 0, 10) }}
                   </span>
                 </div>
               </div>
@@ -504,57 +540,66 @@ const hasAnyChanges = computed(
         </div>
       </div>
 
-      <!-- Job Tiers Section -->
+      <!-- Job Tiers (temporary simulation) -->
       <div class="border-t border-border/40 px-4 py-3">
         <div class="flex items-center justify-between">
           <button
-            class="focus-ring flex items-center gap-1.5 text-left"
+            class="focus-ring -mx-1 flex items-center gap-2 rounded-lg px-1 text-left transition hover:bg-muted/15"
             @click="jobTiersOpen = !jobTiersOpen"
           >
             <component
               :is="jobTiersOpen ? ChevronDown : ChevronRight"
-              class="size-3.5 shrink-0 text-muted-foreground"
+              class="size-4 text-muted-foreground"
             />
             <h4 class="text-[11px] font-bold uppercase tracking-[0.16em] text-foreground">
               Job Tiers
             </h4>
+            <span v-if="hasJobChanges" class="size-1.5 rounded-full bg-primary" />
           </button>
           <button
             v-if="hasJobChanges"
-            class="focus-ring inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/65 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition hover:border-primary/35 hover:text-foreground"
+            class="focus-ring rounded-md p-1 text-muted-foreground transition hover:bg-muted/30 hover:text-foreground"
+            title="Reset to sanctuary defaults"
             @click="emit('reset-job-tiers')"
           >
             <RotateCcw class="size-3" />
-            Reset
           </button>
         </div>
 
-        <p class="mt-1 text-xs text-muted-foreground/60">
-          Job milestone tiers reduce gathering activity duration by 10% each.
+        <p class="mt-1 text-[10px] text-muted-foreground">
+          Derived from sanctuary. Override here for simulation only (not saved).
         </p>
 
         <div v-if="jobTiersOpen" class="mt-3 space-y-2">
           <div
             v-for="job in jobs"
             :key="job"
-            class="flex items-center gap-3 rounded-xl border border-border/40 bg-background/30 px-3 py-2.5"
+            class="flex items-center justify-between rounded-lg px-2 py-1.5"
           >
-            <img v-if="sourceIcons[job]" :src="sourceIcons[job]" alt="" class="size-4 shrink-0" />
-            <span class="min-w-0 flex-1 text-sm font-semibold text-foreground">{{ job }}</span>
-            <div class="flex items-center gap-1.5">
-              <button
-                v-for="t in 3"
+            <div class="flex items-center gap-2">
+              <img v-if="sourceIcons[job]" :src="sourceIcons[job]" alt="" class="size-4 shrink-0" />
+              <span class="text-sm text-foreground">{{ job }}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span
+                v-for="t in 6"
                 :key="t - 1"
-                class="focus-ring h-7 rounded-lg border px-3 text-[11px] font-bold transition"
+                class="cursor-pointer rounded-md border px-2 py-0.5 text-[10px] font-semibold transition"
                 :class="
                   (jobTiers[job] ?? 0) === t - 1
-                    ? 'border-primary/50 bg-primary/15 text-primary'
-                    : 'border-border/50 bg-background/50 text-muted-foreground hover:border-primary/30 hover:text-foreground'
+                    ? 'border-primary bg-primary/15 text-primary'
+                    : 'border-border/50 text-muted-foreground hover:border-border hover:text-foreground'
                 "
                 @click="emit('set-job-tier', job, t - 1)"
               >
-                {{ jobTierLabels[t - 1] }}
-              </button>
+                {{ t - 1 }}
+              </span>
+            </div>
+          </div>
+          <div class="space-y-0.5 px-2 text-[10px] text-muted-foreground">
+            <div v-for="(_b, i) in JOB_TIER_BENEFITS.slice(1)" :key="i" class="flex gap-2">
+              <span class="w-8 font-semibold">T{{ i + 1 }}:</span>
+              <span>{{ jobTierLabel(i + 1) }}</span>
             </div>
           </div>
         </div>
