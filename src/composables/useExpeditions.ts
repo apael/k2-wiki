@@ -41,7 +41,7 @@ export function useExpeditions(creatures: Creature[]) {
         const matchesBiome = biomeFilter.value === 'all' || exp.biome === biomeFilter.value
         return matchesSearch && matchesBiome
       })
-      .sort((a, b) => {
+      .toSorted((a, b) => {
         const aNum = parseInt(a.id.replace(/\D/g, ''), 10) || 0
         const bNum = parseInt(b.id.replace(/\D/g, ''), 10) || 0
         return aNum - bNum
@@ -320,7 +320,7 @@ export function useExpeditions(creatures: Creature[]) {
 
   const uniqueBiomes = computed(() => {
     const ids = new Set(expeditions.value.map((e) => e.biome))
-    return Array.from(ids).sort()
+    return Array.from(ids).toSorted()
   })
 
   function exportSetup(): string {

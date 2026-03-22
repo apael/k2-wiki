@@ -41,7 +41,7 @@ watch(open, async (isOpen) => {
 
 
 const sortedCreatures = computed(() =>
-  [...creatures.value].sort((a, b) => {
+  [...creatures.value].toSorted((a, b) => {
     const aOwned = ownedCreatureIds.value.has(a.id) ? 0 : 1
     const bOwned = ownedCreatureIds.value.has(b.id) ? 0 : 1
     if (aOwned !== bOwned) return aOwned - bOwned
@@ -205,10 +205,10 @@ function close() {
                 >
               </div>
               <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span v-if="ownedCreatureIds.has(creature.id)"
-                  >LVL {{ getLevel(creature.id)
-                  }}<span v-if="isAwakened(creature.id)" class="ml-1 text-pink-400">★</span></span
-                >
+                <span v-if="ownedCreatureIds.has(creature.id)">
+                  LVL {{ getLevel(creature.id)
+                  }}<span v-if="isAwakened(creature.id)" class="ml-1 text-pink-400">★</span>
+                </span>
                 <span v-else class="italic">Not summoned</span>
                 <span>·</span>
                 <span

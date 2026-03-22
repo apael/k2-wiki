@@ -63,7 +63,7 @@ const groupedByTier = computed(() => {
     list.push(c)
     groups.set(c.tier, list)
   }
-  return [...groups.entries()].sort(([a], [b]) => a - b)
+  return [...groups.entries()].toSorted(([a], [b]) => a - b)
 })
 
 

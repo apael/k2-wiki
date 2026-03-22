@@ -12,9 +12,9 @@ export function useCreatures() {
   const traitFilter = ref<string | 'all'>('all')
   const jobFilter = ref<string | 'all'>('all')
 
-  const allTraits = computed(() => [...new Set(creatures.value.map((c) => c.trait))].sort())
+  const allTraits = computed(() => [...new Set(creatures.value.map((c) => c.trait))].toSorted())
 
-  const allJobs = computed(() => [...new Set(creatures.value.map((c) => c.mainJob))].sort())
+  const allJobs = computed(() => [...new Set(creatures.value.map((c) => c.mainJob))].toSorted())
 
   const filteredCreatures = computed(() => {
     return creatures.value.filter((creature) => {

@@ -59,6 +59,11 @@ function getMethodTotalTime(method: PlannerMethod): number | null {
 }
 
 
+function maxBucket(...buckets: Record<string, number>[]) {
+  return buckets.reduce((max, b) => Math.max(max, ...Object.values(b)), 0)
+}
+
+
 const nodeSubtreeSummary = computed(() => {
   const node = displayNode.value
   if (!node) return null
@@ -129,10 +134,6 @@ const nodeSubtreeSummary = computed(() => {
   }
 
   walk(node, true)
-
-  function maxBucket(...buckets: Record<string, number>[]) {
-    return buckets.reduce((max, b) => Math.max(max, ...Object.values(b)), 0)
-  }
 
   const rootMethod = node.defaultMethodId
     ? (node.methods.find((m) => m.id === node.defaultMethodId) ?? null)

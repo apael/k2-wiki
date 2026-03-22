@@ -175,7 +175,7 @@ function handleFileUpload(event: Event) {
   const file = input.files?.[0]
   if (!file) return
   const reader = new FileReader()
-  reader.onload = () => {
+  reader.addEventListener('load', () => {
     const text = reader.result as string
     try {
       modalText.value = JSON.stringify(JSON.parse(text), null, 2)
@@ -183,7 +183,7 @@ function handleFileUpload(event: Event) {
       modalText.value = text
     }
     importError.value = ''
-  }
+  })
   reader.readAsText(file)
   input.value = ''
 }
@@ -247,7 +247,7 @@ const weightedStats = computed(() => {
 
 const creatureTierOptions = computed(() => {
   const tiers = new Set(recommendedCreatures.value.map(({ creature }) => creature.tier))
-  return Array.from(tiers).sort((a, b) => a - b)
+  return Array.from(tiers).toSorted((a, b) => a - b)
 })
 
 

@@ -67,7 +67,7 @@ const targetQuantity = computed(() => normalizeQuantity(quantityInput.value))
 const plannerItemOptions = computed(() =>
   items
     .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .toSorted((a, b) => a.name.localeCompare(b.name))
     .map((item) => ({
       id: item.id,
       name: item.name,

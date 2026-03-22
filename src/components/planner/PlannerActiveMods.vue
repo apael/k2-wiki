@@ -39,7 +39,7 @@ const activeFlowers = computed(() =>
   Object.entries(props.gardenFlowers)
     .filter(([, entries]) => entries.some((e) => e.count > 0))
     .map(([flowerId, entries]) => {
-      const activeEntries = entries.filter((e) => e.count > 0).sort((a, b) => a.level - b.level)
+      const activeEntries = entries.filter((e) => e.count > 0).toSorted((a, b) => a.level - b.level)
       const totalCount = activeEntries.reduce((s, e) => s + e.count, 0)
       const yieldPerMin = activeEntries.reduce((s, e) => s + e.count * e.level, 0)
       return {

@@ -165,10 +165,10 @@ export function xpForLevel(level: number): number {
 
 export function levelFromXp(xp: number): number {
   if (xp <= 0) return 1
-  const level = Math.floor(Math.sqrt(xp / 50))
+  let level = Math.floor(Math.sqrt(xp / 50))
   // Verify the level is correct
   while (level > 1 && xp < xpForLevel(level)) {
-    return level - 1
+    level -= 1
   }
   return Math.max(1, level)
 }
@@ -240,7 +240,7 @@ export function getBestExpeditionsForCreature(
         statAlignment: Math.round(statAlignment * 100),
       }
     })
-    .sort((a, b) => b.score - a.score)
+    .toSorted((a, b) => b.score - a.score)
     .slice(0, limit)
 }
 
@@ -259,5 +259,5 @@ export function getRecommendedCreatures(
         level,
       }
     })
-    .sort((a, b) => b.rating - a.rating)
+    .toSorted((a, b) => b.rating - a.rating)
 }

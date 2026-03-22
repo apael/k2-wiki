@@ -99,7 +99,7 @@ export function useItems() {
 
   const availableSubFilters = computed(() => {
     if (sourceFilter.value === 'all') return []
-    return [...(sourceSubOptions.get(sourceFilter.value) ?? [])].sort()
+    return [...(sourceSubOptions.get(sourceFilter.value) ?? [])].toSorted()
   })
 
   const filteredItems = computed(() => {

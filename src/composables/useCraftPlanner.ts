@@ -584,7 +584,7 @@ function buildPlannerGraph(
     )
     const defaultMethodId =
       knownTimeMethods.length > 0
-        ? knownTimeMethods.sort(
+        ? knownTimeMethods.toSorted(
             (a, b) =>
               (a.totalTimeSeconds ?? Number.POSITIVE_INFINITY) -
               (b.totalTimeSeconds ?? Number.POSITIVE_INFINITY),
@@ -625,6 +625,9 @@ function buildPlannerGraph(
     methodsById: Object.fromEntries(methodsById.entries()),
   }
 }
+
+const resourceSortPriority = (r: string) =>
+  r.startsWith('Garden:') ? 2 : r.startsWith('Expedition:') ? 3 : 1
 
 function computeSchedule(
   root: PlannerNode,
@@ -700,10 +703,8 @@ function computeSchedule(
 
   const totalTime = schedule(root)
 
-  const resourceOrder = [...new Set(tasks.map((t) => t.resource))].sort((a, b) => {
-    const priority = (r: string) =>
-      r.startsWith('Garden:') ? 2 : r.startsWith('Expedition:') ? 3 : 1
-    return priority(a) - priority(b) || a.localeCompare(b)
+  const resourceOrder = [...new Set(tasks.map((t) => t.resource))].toSorted((a, b) => {
+    return resourceSortPriority(a) - resourceSortPriority(b) || a.localeCompare(b)
   })
 
   return {
@@ -907,7 +908,7 @@ export function useCraftPlanner(
             inventoryAmount: inventoryAmounts.value[itemId] ?? 0,
           }),
         )
-        .sort((a, b) => b.amount - a.amount),
+        .toSorted((a, b) => b.amount - a.amount),
     }
   })
 
@@ -1053,11 +1054,11 @@ export function useCraftPlanner(
     const root = graph.value.root
     if (!root) return []
 
-    const items = new Map<string, { itemId: string; itemName: string; itemType: ItemType }>()
+    const treeItems = new Map<string, { itemId: string; itemName: string; itemType: ItemType }>()
 
     function walk(node: PlannerNode) {
-      if (!items.has(node.itemId)) {
-        items.set(node.itemId, {
+      if (!treeItems.has(node.itemId)) {
+        treeItems.set(node.itemId, {
           itemId: node.itemId,
           itemName: node.itemName,
           itemType: node.itemType,
@@ -1072,7 +1073,7 @@ export function useCraftPlanner(
     }
 
     walk(root)
-    return [...items.values()].sort((a, b) => a.itemName.localeCompare(b.itemName))
+    return [...treeItems.values()].toSorted((a, b) => a.itemName.localeCompare(b.itemName))
   })
 
   return {

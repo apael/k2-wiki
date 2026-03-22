@@ -149,7 +149,7 @@ const groupedByTier = computed(() => {
     groups[c.tier].push(c)
   }
   return Object.entries(groups)
-    .sort(([a], [b]) => Number(a) - Number(b))
+    .toSorted(([a], [b]) => Number(a) - Number(b))
     .map(([tier, creatures]) => ({ tier: Number(tier), creatures }))
 })
 

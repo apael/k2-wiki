@@ -41,7 +41,7 @@ function handleSort(key: SortKey) {
 
 
 const sortedCreatures = computed(() => {
-  return [...props.creatures].sort((a, b) => {
+  return [...props.creatures].toSorted((a, b) => {
     let aVal: number | string, bVal: number | string
     if (sortKey.value === 'name') {
       aVal = a.name
