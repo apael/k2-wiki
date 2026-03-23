@@ -792,18 +792,16 @@ function evaluatePartyConfig(
   return { expedition, biome, tier, members, duration, xpPerRun, throughput }
 }
 
+function stepGroupKey(s: PartyPlanStep) {
+  const ids = s.party
+    .map((p) => p.creatureId)
+    .toSorted()
+    .join(',')
+  return `${s.expedition.id}:${s.tier}:${ids}`
+}
+
 function mergePartySteps(steps: PartyPlanStep[]): PartyPlanStep[] {
   if (steps.length === 0) return []
-
-  // Group by expedition+tier+party composition (not just consecutive),
-  // so parallel parties interleaved by startTime still get merged.
-  const groupKey = (s: PartyPlanStep) => {
-    const ids = s.party
-      .map((p) => p.creatureId)
-      .toSorted()
-      .join(',')
-    return `${s.expedition.id}:${s.tier}:${ids}`
-  }
 
   const groups = new Map<string, PartyPlanStep>()
   const groupOrder: string[] = []
@@ -812,7 +810,7 @@ function mergePartySteps(steps: PartyPlanStep[]): PartyPlanStep[] {
   const sorted = [...steps].toSorted((a, b) => (a.startTime ?? 0) - (b.startTime ?? 0))
 
   for (const step of sorted) {
-    const key = groupKey(step)
+    const key = stepGroupKey(step)
     const existing = groups.get(key)
 
     if (existing) {

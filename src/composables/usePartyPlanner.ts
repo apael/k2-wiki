@@ -47,7 +47,7 @@ export function usePartyPlanner(targetLevel: { value: number }) {
 
   watch(
     partyCreatures,
-    (creatures) => {
+    (updatedCreatures) => {
       if (debounceTimer) clearTimeout(debounceTimer)
 
       // Terminate any in-flight worker
@@ -65,18 +65,19 @@ export function usePartyPlanner(targetLevel: { value: number }) {
       isComputing.value = true
       debounceTimer = setTimeout(() => {
         worker = new PartyPlannerWorker()
-        worker.onmessage = (e: MessageEvent<PartyLevelingPlan>) => {
+        worker.addEventListener('message', (e: MessageEvent<PartyLevelingPlan>) => {
           plan.value = e.data
           isComputing.value = false
           worker?.terminate()
           worker = null
-        }
-        worker.onerror = () => {
+        })
+        worker.addEventListener('error', () => {
           isComputing.value = false
           worker?.terminate()
           worker = null
-        }
-        worker.postMessage(JSON.parse(JSON.stringify(creatures)))
+        })
+        // eslint-disable-next-line unicorn/require-post-message-target-origin -- Worker.postMessage has no targetOrigin
+        worker.postMessage(JSON.parse(JSON.stringify(updatedCreatures)))
       }, 150)
     },
     { deep: true, immediate: true },
