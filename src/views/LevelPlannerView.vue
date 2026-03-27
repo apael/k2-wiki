@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { Zap, Users, User } from 'lucide-vue-next'
+import { useNow } from '@vueuse/core'
+import { Clock3, Play, RefreshCw, Users, User, Zap } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import LevelPlannerCreaturePicker from '@/components/level-planner/LevelPlannerCreaturePicker.vue'
 import LevelPlannerResults from '@/components/level-planner/LevelPlannerResults.vue'
 import PartyPlannerResults from '@/components/level-planner/PartyPlannerResults.vue'
+import PlannerLoadingProgress from '@/components/level-planner/PlannerLoadingProgress.vue'
 import PlannerBadge from '@/components/planner/PlannerBadge.vue'
 import PlannerEmptyState from '@/components/planner/PlannerEmptyState.vue'
 import PlannerToolbar from '@/components/planner/PlannerToolbar.vue'
@@ -13,6 +15,7 @@ import { useCreatureCollection } from '@/composables/useCreatureCollection'
 import { useCreatures } from '@/composables/useCreatures'
 import { useLevelPlanner } from '@/composables/useLevelPlanner'
 import { usePartyPlanner } from '@/composables/usePartyPlanner'
+import type { PlannerStrategy, PlannerTimeBudget } from '@/types'
 import { maxLevelForState } from '@/utils/formulas'
 
 const route = useRoute()
@@ -50,13 +53,58 @@ const partyTargetLevel = ref(
 )
 
 
+const partyStrategy = ref<PlannerStrategy>(
+  route.query.strategy === 'hands-free' ? 'hands-free' : 'optimal',
+)
+
+
+const otherStrategy = computed<PlannerStrategy>(() =>
+  partyStrategy.value === 'optimal' ? 'hands-free' : 'optimal',
+)
+
+
+const partyTimeBudget = ref<PlannerTimeBudget>('quick')
+
+
 const {
   plan: partyPlan,
   levelers,
-  boosters,
   hasLevelers,
   isComputing: partyComputing,
-} = usePartyPlanner(partyTargetLevel)
+  progress: partyProgress,
+  calculate: partyCalculate,
+  recalculate: partyRecalculate,
+} = usePartyPlanner(partyTargetLevel, partyStrategy, partyTimeBudget)
+
+
+const {
+  plan: otherPartyPlan,
+  isComputing: otherPartyComputing,
+  calculate: otherPartyCalculate,
+  recalculate: otherPartyRecalculate,
+} = usePartyPlanner(partyTargetLevel, otherStrategy, partyTimeBudget)
+
+
+const hasAnyPlan = computed(
+  () =>
+    (partyPlan.value && partyPlan.value.steps.length > 0) ||
+    (otherPartyPlan.value && otherPartyPlan.value.steps.length > 0),
+)
+
+
+const anyComputing = computed(() => partyComputing.value || otherPartyComputing.value)
+
+
+function calculateBoth() {
+  partyCalculate()
+  otherPartyCalculate()
+}
+
+
+function recalculateBoth() {
+  partyRecalculate()
+  otherPartyRecalculate()
+}
 
 
 // Creature lookup map for party results
@@ -68,13 +116,14 @@ const creatureMap = computed(() => {
 
 
 // URL sync
-watch([mode, creatureId, targetLevel, partyTargetLevel], ([m, cId, tl, ptl]) => {
+watch([mode, creatureId, targetLevel, partyTargetLevel, partyStrategy], ([m, cId, tl, ptl, ps]) => {
   const query: Record<string, string> = { tab: 'levelup', mode: m }
   if (m === 'single') {
     if (cId) query.creature = cId
     if (tl !== 120) query.target = String(tl)
   } else {
     if (ptl !== 120) query.partyTarget = String(ptl)
+    if (ps !== 'optimal') query.strategy = ps
   }
   router.replace({ path: route.path, query })
 })
@@ -95,6 +144,49 @@ function clampLevel(val: string, max: number): number {
   if (!Number.isFinite(n) || n < 2) return 2
   return Math.min(max, Math.round(n))
 }
+
+
+const now = useNow({ interval: 100 })
+
+
+const partyElapsedMs = computed(() => {
+  if (!partyProgress.value) return 0
+  return Math.max(0, +now.value - partyProgress.value.startedAtMs)
+})
+
+
+const partySearchRatio = computed(() => {
+  if (!partyProgress.value || partyProgress.value.maxIterations <= 0) return 0
+  const iterationRatio = partyProgress.value.iteration / partyProgress.value.maxIterations
+  const raw = iterationRatio
+  // Cap at 95% while still computing — the bar completes when the result arrives and progress clears
+  return Math.max(0, Math.min(0.95, raw))
+})
+
+
+const partyProgressSubtitle = computed(() => {
+  if (!partyProgress.value) return 'Exploring route combinations...'
+  switch (partyProgress.value.phase) {
+    case 'initializing':
+      return 'Setting up...'
+    case 'candidates':
+      return 'Evaluating expedition options...'
+    case 'waves':
+      return 'Building expedition waves...'
+    case 'beam':
+      return 'Narrowing down the best routes...'
+    case 'finalizing':
+      return 'Wrapping up...'
+    default:
+      return 'Exploring route combinations...'
+  }
+})
+
+
+const partyProgressPercent = computed(() => Math.round(partySearchRatio.value * 100))
+
+
+const partyBestCompleteTime = computed(() => partyProgress.value?.bestCompleteTimeSeconds ?? null)
 </script>
 
 <template>
@@ -115,7 +207,9 @@ function clampLevel(val: string, max: number): number {
       <p class="max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
         {{
           mode === 'party'
-            ? 'Optimal expedition plan to level your entire collection simultaneously.'
+            ? partyStrategy === 'hands-free'
+              ? 'Stable expedition assignments that run for hours without needing swaps.'
+              : 'Optimal expedition plan to level your entire collection simultaneously.'
             : 'Optimal expedition path to level your creature as fast as possible.'
         }}
       </p>
@@ -158,7 +252,7 @@ function clampLevel(val: string, max: number): number {
     <template v-if="mode === 'single'">
       <PlannerToolbar picker-label="Creature">
         <template #picker>
-          <LevelPlannerCreaturePicker v-model="creatureId" />
+          <LevelPlannerCreaturePicker v-model="creatureId" :party-mode="false" />
         </template>
 
         <template #controls>
@@ -241,57 +335,136 @@ function clampLevel(val: string, max: number): number {
 
     <!-- ===== PARTY MODE ===== -->
     <template v-if="mode === 'party'">
-      <PlannerToolbar picker-label="Target Level">
-        <template #picker>
-          <div class="flex items-center gap-2">
-            <div
-              class="inline-flex items-center overflow-hidden rounded-lg border border-border/70 bg-background/70"
-            >
-              <button
-                v-for="preset in [70, 120]"
-                :key="preset"
-                class="focus-ring h-8 px-3 text-sm font-semibold transition"
-                :class="
-                  partyTargetLevel === preset
-                    ? 'bg-primary/15 text-primary'
-                    : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
-                "
-                @click="partyTargetLevel = preset"
+      <section class="surface-card relative z-20">
+        <div class="flex min-h-[56px] flex-wrap items-center gap-4 px-4 py-3">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div class="flex items-center gap-2">
+              <label
+                class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+                >Target</label
               >
-                {{ preset }}
-              </button>
+              <div
+                class="inline-flex items-center overflow-hidden rounded-lg border border-border/70 bg-background/70"
+              >
+                <button
+                  v-for="preset in [70, 120]"
+                  :key="preset"
+                  class="focus-ring h-8 px-3 text-sm font-semibold transition"
+                  :class="
+                    partyTargetLevel === preset
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
+                  "
+                  @click="partyTargetLevel = preset"
+                >
+                  {{ preset }}
+                </button>
+              </div>
+              <input
+                type="number"
+                min="2"
+                max="120"
+                inputmode="numeric"
+                :value="partyTargetLevel"
+                class="focus-ring h-8 w-16 rounded-lg border border-border/70 bg-background/70 px-2 text-center text-sm font-semibold text-foreground [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                @blur="
+                  partyTargetLevel = clampLevel(($event.target as HTMLInputElement).value, 120)
+                "
+                @change="
+                  partyTargetLevel = clampLevel(($event.target as HTMLInputElement).value, 120)
+                "
+              />
             </div>
-            <input
-              type="number"
-              min="2"
-              max="120"
-              inputmode="numeric"
-              :value="partyTargetLevel"
-              class="focus-ring h-8 w-16 rounded-lg border border-border/70 bg-background/70 px-2 text-center text-sm font-semibold text-foreground [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              @blur="partyTargetLevel = clampLevel(($event.target as HTMLInputElement).value, 120)"
-              @change="
-                partyTargetLevel = clampLevel(($event.target as HTMLInputElement).value, 120)
-              "
-            />
-          </div>
-        </template>
 
-        <template v-if="hasLevelers" #summary>
-          <PlannerBadge color="var(--color-primary)">
-            <Users class="size-3.5" />
-            {{ levelers.length }} to level
-          </PlannerBadge>
-          <PlannerBadge v-if="boosters.length > 0">
-            {{ boosters.length }} booster{{ boosters.length > 1 ? 's' : '' }}
-          </PlannerBadge>
-        </template>
-      </PlannerToolbar>
+            <div class="flex items-center gap-2">
+              <label
+                class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+                >Budget</label
+              >
+              <div
+                class="inline-flex items-center overflow-hidden rounded-lg border border-border/70 bg-background/70"
+              >
+                <button
+                  v-for="opt in ['quick', 'thorough'] as const"
+                  :key="opt"
+                  class="focus-ring h-8 px-3 text-sm font-semibold capitalize transition"
+                  :class="
+                    partyTimeBudget === opt
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
+                  "
+                  @click="partyTimeBudget = opt"
+                >
+                  {{ opt }}
+                </button>
+              </div>
+              <span class="text-[10px] text-muted-foreground/60">Mainly affects optimal</span>
+            </div>
+
+            <button
+              v-if="hasAnyPlan"
+              class="focus-ring inline-flex h-8 items-center gap-1.5 rounded-lg border border-border/70 bg-background/70 px-3 text-sm font-semibold text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+              :disabled="anyComputing"
+              :class="{ 'cursor-not-allowed opacity-50': anyComputing }"
+              @click="recalculateBoth"
+            >
+              <RefreshCw class="size-3.5" :class="{ 'animate-spin': anyComputing }" />
+              Recalculate
+            </button>
+          </div>
+
+          <div v-if="hasLevelers" class="ml-auto flex items-center gap-4">
+            <PlannerBadge color="var(--color-primary)">
+              <Users class="size-3.5" />
+              {{ levelers.length }} to level
+            </PlannerBadge>
+          </div>
+        </div>
+
+        <div v-if="hasAnyPlan" class="flex items-center gap-2 border-t border-border/40 px-4 py-3">
+          <label class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+            >Strategy</label
+          >
+          <div
+            class="inline-flex items-center overflow-hidden rounded-lg border border-border/70 bg-background/70"
+          >
+            <button
+              class="focus-ring flex h-8 items-center gap-1.5 px-3 text-sm font-semibold transition"
+              :class="
+                partyStrategy === 'optimal'
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
+              "
+              @click="partyStrategy = 'optimal'"
+            >
+              <Zap class="size-3.5" />
+              Optimal
+            </button>
+            <div class="w-px self-stretch bg-border/40" />
+            <button
+              class="focus-ring flex h-8 items-center gap-1.5 px-3 text-sm font-semibold transition"
+              :class="
+                partyStrategy === 'hands-free'
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
+              "
+              @click="partyStrategy = 'hands-free'"
+            >
+              <Clock3 class="size-3.5" />
+              Hands-Free
+            </button>
+          </div>
+        </div>
+      </section>
 
       <!-- Computing -->
-      <PlannerEmptyState
-        v-if="partyComputing"
-        title="Computing optimal plan..."
-        subtitle="Simulating parallel expedition routes for your collection."
+      <PlannerLoadingProgress
+        v-if="anyComputing && !hasAnyPlan"
+        :subtitle="partyProgressSubtitle"
+        :progress-percent="partyProgressPercent"
+        :elapsed-ms="partyElapsedMs"
+        :explored-states="partyProgress?.exploredStates ?? 0"
+        :best-complete-time="partyBestCompleteTime"
       />
 
       <!-- No owned creatures to level -->
@@ -301,12 +474,44 @@ function clampLevel(val: string, max: number): number {
         subtitle="Add creatures to your collection and set their levels in the Beastiary to use party mode."
       />
 
+      <!-- Ready to calculate (no plan yet) -->
+      <PlannerEmptyState
+        v-else-if="!hasAnyPlan && !anyComputing"
+        title="Ready to plan."
+        subtitle="Choose your target level and budget, then click Calculate to find the best expedition routes."
+      >
+        <template #action>
+          <button
+            class="focus-ring inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
+            @click="calculateBoth"
+          >
+            <Play class="size-4" />
+            Calculate
+          </button>
+        </template>
+      </PlannerEmptyState>
+
       <!-- Party plan results -->
-      <PartyPlannerResults
-        v-else-if="partyPlan && partyPlan.steps.length > 0"
-        :plan="partyPlan"
-        :creatures="creatureMap"
-      />
+      <template v-else-if="hasAnyPlan">
+        <PartyPlannerResults
+          v-if="partyPlan && partyPlan.steps.length > 0"
+          :plan="partyPlan"
+          :creatures="creatureMap"
+          :other-plan="otherPartyPlan"
+          :strategy="partyStrategy"
+          :other-computing="otherPartyComputing"
+          :target-level="partyTargetLevel"
+        />
+
+        <PlannerLoadingProgress
+          v-else-if="!partyPlan && anyComputing"
+          :subtitle="partyProgressSubtitle"
+          :progress-percent="partyProgressPercent"
+          :elapsed-ms="partyElapsedMs"
+          :explored-states="partyProgress?.exploredStates ?? 0"
+          :best-complete-time="partyBestCompleteTime"
+        />
+      </template>
     </template>
   </div>
 </template>

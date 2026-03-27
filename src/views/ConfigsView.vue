@@ -27,7 +27,8 @@ import { getItemImage } from '@/utils/itemImages'
 import { extractSaveConfig, type SaveConfig } from '@/utils/parseSave'
 
 const { creatures } = useCreatures()
-const { setOwned, setLevel, setAwakened, isOwned, getLevel, isAwakened } = useCreatureCollection()
+const { setOwned, setLevel, setAwakened, isOwned, getLevel, isAwakened, resetCollection } =
+  useCreatureCollection()
 const {
   sanctuaryCreatureIds,
   helperCreatureIds,
@@ -69,18 +70,18 @@ function startEditing(section: EditableSection) {
   switch (section) {
     case 'exclusions':
       sectionSnapshot = {
-        sanctuaryCreatureIds: JSON.parse(JSON.stringify(sanctuaryCreatureIds.value)),
-        helperCreatureIds: JSON.parse(JSON.stringify(helperCreatureIds.value)),
-        machineCreatureIds: JSON.parse(JSON.stringify(machineCreatureIds.value)),
+        sanctuaryCreatureIds: structuredClone(sanctuaryCreatureIds.value),
+        helperCreatureIds: structuredClone(helperCreatureIds.value),
+        machineCreatureIds: structuredClone(machineCreatureIds.value),
       }
       break
     case 'garden':
-      sectionSnapshot = JSON.parse(JSON.stringify(gardenFlowers.value))
+      sectionSnapshot = structuredClone(gardenFlowers.value)
       break
     case 'awaken':
       sectionSnapshot = {
-        awakenGatherUpgrades: JSON.parse(JSON.stringify(awakenGatherUpgrades.value)),
-        awakenSpeedTiers: JSON.parse(JSON.stringify(awakenSpeedTiers.value)),
+        awakenGatherUpgrades: structuredClone(awakenGatherUpgrades.value),
+        awakenSpeedTiers: structuredClone(awakenSpeedTiers.value),
       }
       break
   }
@@ -258,20 +259,19 @@ const helperPreview = computed(() => {
 })
 
 
-const sanctuaryHasDiff = computed(() => {
-  if (!saveConfig.value) return false
-  const current = [...sanctuaryCreatureIds.value].toSorted()
-  const save = [...saveConfig.value.sanctuary].toSorted()
-  return JSON.stringify(current) !== JSON.stringify(save)
-})
+function hasSortedDiff(a: string[], b: string[]): boolean {
+  return JSON.stringify([...a].toSorted()) !== JSON.stringify([...b].toSorted())
+}
 
 
-const helperHasDiff = computed(() => {
-  if (!saveConfig.value) return false
-  const current = [...helperCreatureIds.value].toSorted()
-  const save = [...saveConfig.value.helpers].toSorted()
-  return JSON.stringify(current) !== JSON.stringify(save)
-})
+const sanctuaryHasDiff = computed(
+  () => !!saveConfig.value && hasSortedDiff(sanctuaryCreatureIds.value, saveConfig.value.sanctuary),
+)
+
+
+const helperHasDiff = computed(
+  () => !!saveConfig.value && hasSortedDiff(helperCreatureIds.value, saveConfig.value.helpers),
+)
 
 
 const machinePreview = computed(() => {
@@ -289,12 +289,9 @@ const machinePreview = computed(() => {
 })
 
 
-const machineHasDiff = computed(() => {
-  if (!saveConfig.value) return false
-  const current = [...machineCreatureIds.value].toSorted()
-  const save = [...saveConfig.value.machines].toSorted()
-  return JSON.stringify(current) !== JSON.stringify(save)
-})
+const machineHasDiff = computed(
+  () => !!saveConfig.value && hasSortedDiff(machineCreatureIds.value, saveConfig.value.machines),
+)
 
 
 const exclusionsHaveDiff = computed(
@@ -575,6 +572,7 @@ function resetAll() {
   resetInventory()
   resetGarden()
   resetAwaken()
+  resetCollection()
 }
 
 
