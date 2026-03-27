@@ -244,6 +244,74 @@ export function getBestExpeditionsForCreature(
     .slice(0, limit)
 }
 
+export function getBestExpeditionsForLeveling(
+  creature: Creature,
+  level: number,
+  limit: number = 5,
+): BestExpeditionEntry[] {
+  const expeditions = expeditionsData as Expedition[]
+  const biomes = biomesData as Biome[]
+  const biomeMap = new Map(biomes.map((b) => [b.id, b]))
+
+  return expeditions
+    .map((expedition) => {
+      const biome = biomeMap.get(expedition.biome)
+      const traitMatch = creature.trait === expedition.trait
+
+      // Biome status
+      let biomeStatus: 'advantage' | 'disadvantage' | 'neutral' = 'neutral'
+      if (biome) {
+        const mult = biomeMultiplier(creature, biome)
+        if (mult > 1) biomeStatus = 'advantage'
+        else if (mult < 1) biomeStatus = 'disadvantage'
+      }
+
+      // Stat alignment (for display)
+      const statKeys: (keyof CreatureStats)[] = [
+        'power',
+        'grit',
+        'agility',
+        'smarts',
+        'looting',
+        'luck',
+      ]
+      const statTotal = statKeys.reduce((sum, k) => sum + creature.stats[k], 0)
+      const creatureProportions = statKeys.map((k) =>
+        statTotal > 0 ? creature.stats[k] / statTotal : 0,
+      )
+      const weights = statKeys.map((k) => expedition.statWeights[k])
+      const weightTotal = weights.reduce((sum, w) => sum + w, 0)
+      const normalizedWeights = weights.map((w) => (weightTotal > 0 ? w / weightTotal : 0))
+      const statAlignment = creatureProportions.reduce(
+        (sum, p, i) => sum + p * normalizedWeights[i],
+        0,
+      )
+
+      // Score by best XP/sec across all tiers
+      let bestXpPerSec = 0
+      for (let tier = 1; tier <= 5; tier++) {
+        const rating = calculateCreatureRating(creature, expedition, level, biome)
+        const duration = calculateDuration(rating, expedition, tier)
+        const xpPerRun = calculateExpeditionXp(expedition, tier, 0, 1)
+        if (duration > 0 && xpPerRun > 0) {
+          const xpPerSec = xpPerRun / duration
+          if (xpPerSec > bestXpPerSec) bestXpPerSec = xpPerSec
+        }
+      }
+
+      return {
+        expedition,
+        score: Math.round(bestXpPerSec * 1000),
+        biomeName: biome?.name ?? expedition.biome,
+        traitMatch,
+        biomeStatus,
+        statAlignment: Math.round(statAlignment * 100),
+      }
+    })
+    .toSorted((a, b) => b.score - a.score)
+    .slice(0, limit)
+}
+
 export function getRecommendedCreatures(
   creatures: Creature[],
   expedition: Expedition,

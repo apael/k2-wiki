@@ -86,6 +86,10 @@ export function useCreatureCollection() {
     }
   }
 
+  function resetCollection() {
+    collection.value = {}
+  }
+
   function setLevel(id: string, level: number) {
     const current = collection.value[id]
     const awakened = current?.awakened ?? false
@@ -110,5 +114,6 @@ export function useCreatureCollection() {
     getLevel,
     isAwakened,
     setAwakened,
+    resetCollection,
   }
 }
