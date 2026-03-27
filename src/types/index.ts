@@ -248,16 +248,67 @@ export interface PartyPlanCreature {
   awakened: boolean
 }
 
+export interface PartyPlannerExpeditionState {
+  party: string[]
+  tier: number
+  loopCount: number
+}
+
+export type PlannerStrategy = 'optimal' | 'hands-free'
+
+export type PlannerTimeBudget = 'quick' | 'thorough'
+
+export interface PartyPlannerInput {
+  creatures: PartyPlanCreature[]
+  expeditions: Record<string, PartyPlannerExpeditionState>
+  strategy?: PlannerStrategy
+  timeBudget?: PlannerTimeBudget
+}
+
+export interface PartyPlannerProgress {
+  phase: 'initializing' | 'candidates' | 'waves' | 'beam' | 'finalizing'
+  iteration: number
+  maxIterations: number
+  beamSize: number
+  stateIndex: number
+  statesInIteration: number
+  exploredStates: number
+  expeditionsConsidered: number
+  waveVariantsEvaluated: number
+  bestCompleteTimeSeconds: number | null
+  iterationBudget: number
+  startedAtMs: number
+  updatedAtMs: number
+  elapsedMs: number
+}
+
+export type PartyPlannerWorkerMessage =
+  | { type: 'progress'; progress: PartyPlannerProgress }
+  | { type: 'result'; result: PartyLevelingPlan }
+
+export interface PartyPlanMember {
+  creatureId: string
+  fromLevel: number
+  toLevel: number
+  xpGained: number
+  isBooster: boolean
+}
+
 export interface PartyPlanStep {
   expedition: Expedition
   tier: number
-  party: { creatureId: string; fromLevel: number; toLevel: number; xpGained: number }[]
+  party: PartyPlanMember[]
   runs: number
   timeSeconds: number
   xpPerMinute: number
   biomeName: string
   loopCount: number
+  loopCountStart: number
+  loopCountEnd: number
+  preservedLoopBonus: boolean
+  wasReconfigured: boolean
   startTime?: number
+  endTime?: number
   isAwakeningStep?: boolean
 }
 
@@ -279,6 +330,10 @@ export interface PartyLevelingPlan {
   steps: PartyPlanStep[]
   summaries: CreatureLevelingSummary[]
   awakenEvents: AwakenEvent[]
+  inputLevelerCount: number
+  plannedLevelerCount: number
+  isComplete: boolean
+  incompleteCreatureIds: string[]
   totalTimeSeconds: number
   totalRuns: number
 }
