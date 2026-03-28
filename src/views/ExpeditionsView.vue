@@ -28,7 +28,7 @@ import type { Creature, ElementType, ExpeditionStatWeights } from '@/types'
 import { getCreatureImage } from '@/utils/creatureImages'
 import { formatDuration, toTitleCase } from '@/utils/format'
 import { statAbbreviations, statLabels, tierModifiers } from '@/utils/formulas'
-import { sanctuaryIcon, helpersIcon, machinesIcon } from '@/utils/icons'
+import { sanctuaryIcon, helpersIcon, machinesIcon, expeditionTierIcons } from '@/utils/icons'
 import { getItemImage } from '@/utils/itemImages'
 
 const route = useRoute()
@@ -553,10 +553,12 @@ function toggleCreatureTier(tier: number) {
                   class="size-5 shrink-0 object-contain"
                 />
                 <p class="truncate text-sm font-semibold text-foreground">{{ expedition.name }}</p>
-                <span
-                  class="shrink-0 rounded bg-muted/50 px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground"
-                >
-                  T{{ expeditionTiers[expedition.id] || 1 }}
+                <span class="shrink-0 rounded bg-muted/50 px-1.5 py-0.5">
+                  <img
+                    :src="expeditionTierIcons[expeditionTiers[expedition.id] || 1]"
+                    :alt="`Tier ${expeditionTiers[expedition.id] || 1}`"
+                    class="size-4 object-contain"
+                  />
                 </span>
               </div>
               <span class="shrink-0 font-mono text-sm text-primary">{{
@@ -636,7 +638,7 @@ function toggleCreatureTier(tier: number) {
                 <button
                   v-for="t in 5"
                   :key="t"
-                  class="focus-ring rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                  class="focus-ring rounded-md px-1.5 py-1 text-xs font-semibold transition"
                   :class="
                     selectedTier === t
                       ? 'bg-primary text-primary-foreground'
@@ -644,7 +646,11 @@ function toggleCreatureTier(tier: number) {
                   "
                   @click="selectedTier = t"
                 >
-                  T{{ t }}
+                  <img
+                    :src="expeditionTierIcons[t]"
+                    :alt="`Tier ${t}`"
+                    class="size-7 object-contain"
+                  />
                 </button>
               </div>
             </div>
