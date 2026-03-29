@@ -7,6 +7,7 @@ import { calculateJobTiersFromSanctuary } from '@/utils/parseSave'
 const sanctuaryCreatureIds = useLocalStorage<string[]>('config-sanctuary-creatures', [])
 const helperCreatureIds = useLocalStorage<string[]>('config-helper-creatures', [])
 const machineCreatureIds = useLocalStorage<string[]>('config-machine-creature-ids', [])
+const expeditionToolXpBonus = useLocalStorage<number>('config-tool-xp-bonus', 1)
 
 const inventoryAmounts = useLocalStorage<Record<string, number>>('config-inventory', {})
 const gardenFlowers = useLocalStorage<Record<string, GardenFlowerEntry[]>>(
@@ -60,6 +61,10 @@ export function useGameConfig() {
 
   function setMachineCreatures(ids: string[]) {
     machineCreatureIds.value = ids
+  }
+
+  function setExpeditionToolXpBonus(bonus: number) {
+    expeditionToolXpBonus.value = bonus
   }
 
   function setInventory(itemId: string, amount: number) {
@@ -134,6 +139,7 @@ export function useGameConfig() {
     sanctuaryCreatureIds.value = []
     helperCreatureIds.value = []
     machineCreatureIds.value = []
+    expeditionToolXpBonus.value = 1
     resetInventory()
     resetGarden()
     resetAwaken()
@@ -164,5 +170,7 @@ export function useGameConfig() {
     setAwakenSpeedTier,
     resetAwaken,
     resetGameConfig,
+    setExpeditionToolXpBonus,
+    expeditionToolXpBonus,
   }
 }

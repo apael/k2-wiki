@@ -55,6 +55,7 @@ const {
   expeditionCompletions,
   setExpeditionCompletions,
   resetGameConfig,
+  setExpeditionToolXpBonus,
 } = useGameConfig()
 
 
@@ -585,11 +586,35 @@ function applyAwaken() {
 }
 
 
+function applyTools() {
+  if (!saveConfig.value) return
+  setExpeditionToolXpBonus(((saveConfig.value?.tools?.sword || 0) * 5) / 100 + 1)
+}
+
+
 function applyExpeditionCompletions() {
   if (!saveConfig.value) return
   setExpeditionCompletions({ ...saveConfig.value.expeditionCompletions })
   appliedSections.value = { ...appliedSections.value, expeditions: true }
   sectionsCollapsed.value = { ...sectionsCollapsed.value, expeditions: true }
+}
+
+
+function applyExpedition() {
+  if (!saveConfig.value) return
+  localStorage.setItem(
+    'expedition-parties',
+    JSON.stringify(saveConfig.value.currentExpedition.parties),
+  )
+  localStorage.setItem(
+    'expedition-creature-levels',
+    JSON.stringify(saveConfig.value.currentExpedition.levels),
+  )
+  localStorage.setItem('expedition-tiers', JSON.stringify(saveConfig.value.currentExpedition.tiers))
+  localStorage.setItem(
+    'expedition-loop-counts',
+    JSON.stringify(saveConfig.value.currentExpedition.loopCounts),
+  )
 }
 
 
@@ -599,7 +624,9 @@ function applyAll() {
   applyInventory()
   applyGarden()
   applyAwaken()
+  applyTools()
   applyExpeditionCompletions()
+  applyExpedition()
 }
 
 

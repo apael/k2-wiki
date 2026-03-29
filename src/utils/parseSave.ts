@@ -1,6 +1,8 @@
 import creaturesData from '@/data/creatures.json'
 import type { GardenFlowerEntry, AwakenGatherUpgrade } from '@/types'
 
+import { levelFromXp } from './formulas'
+
 interface SaveInventoryItem {
   id: string
   amount: number
@@ -43,6 +45,15 @@ export interface SaveConfig {
   jobTiers: Record<string, number>
   expeditionCompletions: Record<string, Record<number, number>>
   creatures: SaveCreature[]
+  tools?: { sword?: number }
+  currentExpedition: ExpeditionData
+}
+
+type ExpeditionData = {
+  parties: Record<string, string[]>
+  tiers: Record<string, number>
+  loopCounts: Record<string, number>
+  levels: Record<string, number>
 }
 
 const GATHER_JOBS = new Set(['Chopping', 'Mining', 'Digging', 'Exploring', 'Fishing', 'Farming'])
@@ -75,7 +86,10 @@ export function extractSaveConfig(save: Record<string, unknown>): SaveConfig {
 
   const jobTiers = parseSanctuaryJobTiers(sanctuary)
 
+  const tools = save.tools || {}
   const expeditionCompletions = parseExpeditionCompletions(save)
+
+  const currentExpedition = buildExpeditionData(save, creatures)
 
   return {
     sanctuary,
@@ -88,7 +102,38 @@ export function extractSaveConfig(save: Record<string, unknown>): SaveConfig {
     jobTiers,
     expeditionCompletions,
     creatures,
+    tools,
+    currentExpedition,
   }
+}
+
+function buildExpeditionData(save: Record<string, any>, creatureMap: SaveCreature[]) {
+  const result: ExpeditionData = {
+    parties: {},
+    tiers: {},
+    loopCounts: {},
+    levels: {},
+  }
+
+  save.activeExpeditions.forEach((exp: any) => {
+    const typeId = exp.instance.expeditionTypeId
+
+    result.parties[typeId] = exp.creatures.map(
+      (id: string) =>
+        creatureMap.find((c: SaveCreature) => {
+          if (c.id === id) {
+            result.levels[c.species] = levelFromXp(c.experience)
+            return true
+          }
+          return false
+        })?.species,
+    )
+
+    result.tiers[typeId] = exp.instance.tier
+    result.loopCounts[typeId] = exp.loopCount ?? 0
+  })
+
+  return result
 }
 
 export function parseInventory(inventory: SaveInventoryItem[]): Record<string, number> {
