@@ -597,6 +597,13 @@ function toggleCreatureTier(tier: number) {
               >
                 {{ expeditionEvaluations[expedition.id]!.xpPerSecond.toFixed(2) }} XP/s
               </span>
+              <span
+                v-if="expeditionEvaluations[expedition.id]"
+                class="shrink-0 font-mono text-xs font-semibold"
+                :class="'text-grey-400'"
+              >
+                ({{ expeditionEvaluations[expedition.id]!.partyXpPerSecond.toFixed(2) }}/ea)
+              </span>
             </div>
           </button>
 

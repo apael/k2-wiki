@@ -65,7 +65,13 @@ export function useExpeditions(creatures: Creature[]) {
   const expeditionEvaluations = computed(() => {
     const result: Record<
       string,
-      { xpPerCreature: number; xpPerSecond: number; duration: number; scoreRatio: number } | null
+      {
+        xpPerCreature: number
+        xpPerSecond: number
+        duration: number
+        scoreRatio: number
+        partyXpPerSecond: number
+      } | null
     > = {}
     for (const exp of expeditions.value) {
       result[exp.id] = evaluateExpedition(exp)
@@ -81,12 +87,18 @@ export function useExpeditions(creatures: Creature[]) {
         sum += evaluation.xpPerSecond
       }
     }
-    return sum * expeditionToolXpBonus.value
+    return sum
   })
 
   function evaluateExpedition(
     exp: Expedition,
-  ): { xpPerCreature: number; xpPerSecond: number; duration: number; scoreRatio: number } | null {
+  ): {
+    xpPerCreature: number
+    xpPerSecond: number
+    duration: number
+    scoreRatio: number
+    partyXpPerSecond: number
+  } | null {
     const partyIds = expeditionParties.value[exp.id]
     if (!partyIds || partyIds.length === 0) return null
     const partyCreatures = partyIds
@@ -105,9 +117,19 @@ export function useExpeditions(creatures: Creature[]) {
     const activeCreatures = partyCreatures.length
     const loops = expeditionLoopCounts.value[exp.id] ?? 0
     const xpPerCreature = calculateExpeditionXp(exp, tier, loops, activeCreatures)
-    const xpPerSecond = duration > 0 ? (xpPerCreature * xpEligibleCreatures.length) / duration : 0
+    const xpPerSecond =
+      duration > 0
+        ? (xpPerCreature * xpEligibleCreatures.length * expeditionToolXpBonus.value) / duration
+        : 0
+    const partyXpPerSecond = duration > 0 ? xpPerCreature / duration : 0
 
-    return { xpPerCreature, xpPerSecond, duration, scoreRatio: diff > 0 ? score / diff : 0 }
+    return {
+      xpPerCreature,
+      xpPerSecond,
+      duration,
+      scoreRatio: diff > 0 ? score / diff : 0,
+      partyXpPerSecond,
+    }
   }
 
   // Restore party slots and tier when expedition changes
