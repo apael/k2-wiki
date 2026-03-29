@@ -84,15 +84,13 @@ export function useExpeditions(creatures: Creature[]) {
     for (const exp of expeditions.value) {
       const evaluation = expeditionEvaluations.value[exp.id]
       if (evaluation) {
-        sum += evaluation.xpPerSecond
+        sum += evaluation.partyXpPerSecond
       }
     }
     return sum
   })
 
-  function evaluateExpedition(
-    exp: Expedition,
-  ): {
+  function evaluateExpedition(exp: Expedition): {
     xpPerCreature: number
     xpPerSecond: number
     duration: number
@@ -117,11 +115,11 @@ export function useExpeditions(creatures: Creature[]) {
     const activeCreatures = partyCreatures.length
     const loops = expeditionLoopCounts.value[exp.id] ?? 0
     const xpPerCreature = calculateExpeditionXp(exp, tier, loops, activeCreatures)
-    const xpPerSecond =
+    const xpPerSecond = duration > 0 ? xpPerCreature / duration : 0
+    const partyXpPerSecond =
       duration > 0
         ? (xpPerCreature * xpEligibleCreatures.length * expeditionToolXpBonus.value) / duration
         : 0
-    const partyXpPerSecond = duration > 0 ? xpPerCreature / duration : 0
 
     return {
       xpPerCreature,
