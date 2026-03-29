@@ -22,6 +22,20 @@ export const jobIcons: Record<string, string> = {
   farming: farmingIcon,
 }
 
+import commonSkull from '@/assets/icons/common-skull.png'
+import legendarySkull from '@/assets/icons/legendary-skull.png'
+import rareSkull from '@/assets/icons/rare-skull.png'
+import superRareSkull from '@/assets/icons/super-rare-skull.png'
+import uncommonSkull from '@/assets/icons/uncommon-skull.png'
+
+export const expeditionTierIcons: Record<number, string> = {
+  1: commonSkull,
+  2: uncommonSkull,
+  3: rareSkull,
+  4: superRareSkull,
+  5: legendarySkull,
+}
+
 export const sourceIcons: Record<string, string> = {
   ...jobIcons,
   // Title-cased variants (used in ItemDetail jobId)

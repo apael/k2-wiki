@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import LevelPlannerCreaturePicker from '@/components/level-planner/LevelPlannerCreaturePicker.vue'
 import LevelPlannerResults from '@/components/level-planner/LevelPlannerResults.vue'
+import PartyCreatureFilter from '@/components/level-planner/PartyCreatureFilter.vue'
 import PartyPlannerResults from '@/components/level-planner/PartyPlannerResults.vue'
 import PlannerLoadingProgress from '@/components/level-planner/PlannerLoadingProgress.vue'
 import PlannerBadge from '@/components/planner/PlannerBadge.vue'
@@ -13,6 +14,7 @@ import PlannerEmptyState from '@/components/planner/PlannerEmptyState.vue'
 import PlannerToolbar from '@/components/planner/PlannerToolbar.vue'
 import { useCreatureCollection } from '@/composables/useCreatureCollection'
 import { useCreatures } from '@/composables/useCreatures'
+import { useGameConfig } from '@/composables/useGameConfig'
 import { useLevelPlanner } from '@/composables/useLevelPlanner'
 import { usePartyPlanner } from '@/composables/usePartyPlanner'
 import type { PlannerStrategy, PlannerTimeBudget } from '@/types'
@@ -21,7 +23,8 @@ import { maxLevelForState } from '@/utils/formulas'
 const route = useRoute()
 const router = useRouter()
 const { creatures } = useCreatures()
-const { isAwakened } = useCreatureCollection()
+const { ownedCreatureIds, getLevel, isAwakened } = useCreatureCollection()
+const { excludedCreatureIds } = useGameConfig()
 
 
 // Mode: single or party
@@ -66,6 +69,70 @@ const otherStrategy = computed<PlannerStrategy>(() =>
 const partyTimeBudget = ref<PlannerTimeBudget>('quick')
 
 
+// Creature override state (session-only, not persisted)
+const plannerExcluded = ref(new Set<string>())
+const plannerIncluded = ref(new Set<string>())
+const creatureOverrides = { plannerExcluded, plannerIncluded }
+
+
+const hasOverrides = computed(
+  () => plannerExcluded.value.size > 0 || plannerIncluded.value.size > 0,
+)
+
+
+const overrideableCreatures = computed(() =>
+  creatures.value
+    .filter((c) => ownedCreatureIds.value.has(c.id))
+    .toSorted((a, b) => a.name.localeCompare(b.name)),
+)
+
+
+function toggleCreatureOverride(id: string) {
+  const isGloballyExcluded = excludedCreatureIds.value.has(id)
+
+
+  if (isGloballyExcluded) {
+    // Toggle force-include for globally-excluded creatures
+    const next = new Set(plannerIncluded.value)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    plannerIncluded.value = next
+  } else {
+    // Toggle planner-exclude for normally-available creatures
+    const next = new Set(plannerExcluded.value)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    plannerExcluded.value = next
+  }
+}
+
+
+function toggleTierOverride(ids: string[], include: boolean) {
+  const nextExcluded = new Set(plannerExcluded.value)
+  const nextIncluded = new Set(plannerIncluded.value)
+  for (const id of ids) {
+    const isGloballyExcluded = excludedCreatureIds.value.has(id)
+    if (include) {
+      // Include: remove from planner excluded, add to planner included if globally excluded
+      nextExcluded.delete(id)
+      if (isGloballyExcluded) nextIncluded.add(id)
+    } else {
+      // Exclude: add to planner excluded if not globally excluded, remove from planner included
+      nextIncluded.delete(id)
+      if (!isGloballyExcluded) nextExcluded.add(id)
+    }
+  }
+  plannerExcluded.value = nextExcluded
+  plannerIncluded.value = nextIncluded
+}
+
+
+function resetCreatureOverrides() {
+  plannerExcluded.value = new Set()
+  plannerIncluded.value = new Set()
+}
+
+
 const {
   plan: partyPlan,
   levelers,
@@ -74,7 +141,7 @@ const {
   progress: partyProgress,
   calculate: partyCalculate,
   recalculate: partyRecalculate,
-} = usePartyPlanner(partyTargetLevel, partyStrategy, partyTimeBudget)
+} = usePartyPlanner(partyTargetLevel, partyStrategy, partyTimeBudget, creatureOverrides)
 
 
 const {
@@ -82,7 +149,7 @@ const {
   isComputing: otherPartyComputing,
   calculate: otherPartyCalculate,
   recalculate: otherPartyRecalculate,
-} = usePartyPlanner(partyTargetLevel, otherStrategy, partyTimeBudget)
+} = usePartyPlanner(partyTargetLevel, otherStrategy, partyTimeBudget, creatureOverrides)
 
 
 const hasAnyPlan = computed(
@@ -335,6 +402,20 @@ const partyBestCompleteTime = computed(() => partyProgress.value?.bestCompleteTi
 
     <!-- ===== PARTY MODE ===== -->
     <template v-if="mode === 'party'">
+      <!-- Creature filter overrides -->
+      <PartyCreatureFilter
+        :creatures="overrideableCreatures"
+        :global-excluded-ids="excludedCreatureIds"
+        :planner-excluded="plannerExcluded"
+        :planner-included="plannerIncluded"
+        :get-level="getLevel"
+        :is-awakened="isAwakened"
+        :has-overrides="hasOverrides"
+        @toggle="toggleCreatureOverride"
+        @toggle-tier="toggleTierOverride"
+        @reset="resetCreatureOverrides"
+      />
+
       <section class="surface-card relative z-20">
         <div class="flex min-h-[56px] flex-wrap items-center gap-4 px-4 py-3">
           <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -418,6 +499,7 @@ const partyBestCompleteTime = computed(() => partyProgress.value?.bestCompleteTi
               <Users class="size-3.5" />
               {{ levelers.length }} to level
             </PlannerBadge>
+            <PlannerBadge v-if="hasOverrides" color="var(--color-primary)"> Filtered </PlannerBadge>
           </div>
         </div>
 

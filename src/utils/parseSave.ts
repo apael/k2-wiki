@@ -41,6 +41,7 @@ export interface SaveConfig {
   awakenGatherUpgrades: Record<string, AwakenGatherUpgrade>
   awakenSpeedTiers: Record<string, number>
   jobTiers: Record<string, number>
+  expeditionCompletions: Record<string, Record<number, number>>
   creatures: SaveCreature[]
   tools?: { sword?: number }
 }
@@ -76,6 +77,7 @@ export function extractSaveConfig(save: Record<string, unknown>): SaveConfig {
   const jobTiers = parseSanctuaryJobTiers(sanctuary)
 
   const tools = save.tools || {}
+  const expeditionCompletions = parseExpeditionCompletions(save)
 
   return {
     sanctuary,
@@ -86,6 +88,7 @@ export function extractSaveConfig(save: Record<string, unknown>): SaveConfig {
     awakenGatherUpgrades,
     awakenSpeedTiers,
     jobTiers,
+    expeditionCompletions,
     creatures,
     tools,
   }
@@ -237,6 +240,27 @@ function parseMachineCreatures(save: Record<string, unknown>, creatures: SaveCre
     }
   }
 
+  return result
+}
+
+function parseExpeditionCompletions(
+  save: Record<string, unknown>,
+): Record<string, Record<number, number>> {
+  const raw = save.expeditionCompletions
+  if (!raw || typeof raw !== 'object') return {}
+  const result: Record<string, Record<number, number>> = {}
+  for (const [expId, tiers] of Object.entries(raw as Record<string, unknown>)) {
+    if (!tiers || typeof tiers !== 'object') continue
+    const tierCounts: Record<number, number> = {}
+    for (const [tier, count] of Object.entries(tiers as Record<string, unknown>)) {
+      if (typeof count === 'number' && count > 0) {
+        tierCounts[Number(tier)] = count
+      }
+    }
+    if (Object.keys(tierCounts).length > 0) {
+      result[expId] = tierCounts
+    }
+  }
   return result
 }
 
