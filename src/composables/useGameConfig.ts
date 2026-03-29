@@ -35,6 +35,10 @@ const awakenSpeedTiers = useLocalStorage<Record<string, number>>('config-awaken-
   Stove: 0,
   Workbench: 0,
 })
+const expeditionCompletions = useLocalStorage<Record<string, Record<number, number>>>(
+  'config-expedition-completions',
+  {},
+)
 
 export function useGameConfig() {
   const excludedCreatureIds = computed(() => {
@@ -127,6 +131,10 @@ export function useGameConfig() {
     awakenSpeedTiers.value = { Furnace: 0, Stove: 0, Workbench: 0 }
   }
 
+  function setExpeditionCompletions(completions: Record<string, Record<number, number>>) {
+    expeditionCompletions.value = completions
+  }
+
   function resetGameConfig() {
     sanctuaryCreatureIds.value = []
     helperCreatureIds.value = []
@@ -135,6 +143,7 @@ export function useGameConfig() {
     resetInventory()
     resetGarden()
     resetAwaken()
+    expeditionCompletions.value = {}
   }
 
   return {
@@ -147,9 +156,11 @@ export function useGameConfig() {
     gardenFlowers,
     awakenGatherUpgrades,
     awakenSpeedTiers,
+    expeditionCompletions,
     setSanctuaryCreatures,
     setHelperCreatures,
     setMachineCreatures,
+    setExpeditionCompletions,
     setInventory,
     resetInventory,
     setGardenFlowerEntries,
