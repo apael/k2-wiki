@@ -46,9 +46,9 @@ export function useExpeditions(creatures: Creature[]) {
         return matchesSearch && matchesBiome
       })
       .toSorted((a, b) => {
-        const aNum = parseInt(a.id.replace(/\D/g, ''), 10) || 0
-        const bNum = parseInt(b.id.replace(/\D/g, ''), 10) || 0
-        return aNum - bNum
+        const diff = a.requiredExpeditionCompletions - b.requiredExpeditionCompletions
+        if (diff !== 0) return diff
+        return a.baseRating - b.baseRating
       })
   })
 
