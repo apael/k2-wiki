@@ -13,6 +13,10 @@ const itemImagesById = Object.fromEntries(
   }),
 )
 
-export function getItemImage(item: Pick<Item, 'id'>): string | undefined {
+export function getItemImage(item: Pick<Item, 'id'> & { image?: string }): string | undefined {
+  if (item.image) {
+    const imageId = item.image.replace('.png', '').toLowerCase()
+    return itemImagesById[imageId] ?? itemImagesById[item.id.toLowerCase()]
+  }
   return itemImagesById[item.id.toLowerCase()]
 }
