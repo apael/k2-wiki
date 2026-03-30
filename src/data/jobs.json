@@ -56,19 +56,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.225,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.1125,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.01125,
             "min": 1,
             "max": 1
           }
@@ -90,19 +90,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.0125,
             "min": 1,
             "max": 1
           }
@@ -124,19 +124,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.275,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.1375,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.01375,
             "min": 1,
             "max": 1
           }
@@ -158,19 +158,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.3,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.15,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.015,
             "min": 1,
             "max": 1
           }
@@ -192,19 +192,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.325,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.1625,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.01625,
             "min": 1,
             "max": 1
           }
@@ -226,19 +226,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.35,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.175,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.0175,
             "min": 1,
             "max": 1
           }
@@ -260,19 +260,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.4,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.2,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.02,
             "min": 1,
             "max": 1
           }
@@ -294,19 +294,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.5,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.025,
             "min": 1,
             "max": 1
           }
@@ -328,19 +328,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.625,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.3125,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.03125,
             "min": 1,
             "max": 1
           }
@@ -362,19 +362,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 0.875,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.4375,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.04375,
             "min": 1,
             "max": 1
           }
@@ -396,19 +396,19 @@
           },
           {
             "id": "leaf",
-            "chance": 0.2,
+            "chance": 1.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "feather",
-            "chance": 0.1,
+            "chance": 0.5625,
             "min": 1,
             "max": 1
           },
           {
             "id": "pouch",
-            "chance": 0.01,
+            "chance": 0.05625,
             "min": 1,
             "max": 1
           }
@@ -473,19 +473,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.225,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.1125,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.01125,
             "min": 1,
             "max": 1
           }
@@ -507,19 +507,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.0125,
             "min": 1,
             "max": 1
           }
@@ -541,19 +541,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.275,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.1375,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.01375,
             "min": 1,
             "max": 1
           }
@@ -575,19 +575,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.3,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.15,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.015,
             "min": 1,
             "max": 1
           }
@@ -609,19 +609,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.325,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.1625,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.01625,
             "min": 1,
             "max": 1
           }
@@ -643,19 +643,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.35,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.175,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.0175,
             "min": 1,
             "max": 1
           }
@@ -677,19 +677,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.4,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.2,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.02,
             "min": 1,
             "max": 1
           }
@@ -711,19 +711,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.5,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.025,
             "min": 1,
             "max": 1
           }
@@ -745,19 +745,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.625,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.3125,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.03125,
             "min": 1,
             "max": 1
           }
@@ -779,19 +779,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.875,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.4375,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.04375,
             "min": 1,
             "max": 1
           }
@@ -813,19 +813,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 1.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "bone",
-            "chance": 0.1,
+            "chance": 0.5625,
             "min": 1,
             "max": 1
           },
           {
             "id": "burried-chest",
-            "chance": 0.01,
+            "chance": 0.05625,
             "min": 1,
             "max": 1
           }
@@ -890,19 +890,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.225,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.1125,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.01125,
             "min": 1,
             "max": 1
           }
@@ -924,19 +924,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.0125,
             "min": 1,
             "max": 1
           }
@@ -958,19 +958,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.275,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.1375,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.01375,
             "min": 1,
             "max": 1
           }
@@ -992,19 +992,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.3,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.15,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.015,
             "min": 1,
             "max": 1
           }
@@ -1026,19 +1026,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.325,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.1625,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.01625,
             "min": 1,
             "max": 1
           }
@@ -1060,19 +1060,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.35,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.175,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.0175,
             "min": 1,
             "max": 1
           }
@@ -1094,19 +1094,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.4,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.2,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.02,
             "min": 1,
             "max": 1
           }
@@ -1128,19 +1128,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.5,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.025,
             "min": 1,
             "max": 1
           }
@@ -1162,19 +1162,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.625,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.3125,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.03125,
             "min": 1,
             "max": 1
           }
@@ -1196,19 +1196,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 0.875,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.4375,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.04375,
             "min": 1,
             "max": 1
           }
@@ -1230,19 +1230,19 @@
           },
           {
             "id": "meat",
-            "chance": 0.2,
+            "chance": 1.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "hide",
-            "chance": 0.1,
+            "chance": 0.5625,
             "min": 1,
             "max": 1
           },
           {
             "id": "backpack",
-            "chance": 0.01,
+            "chance": 0.05625,
             "min": 1,
             "max": 1
           }
@@ -1307,19 +1307,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.225,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.1125,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.01125,
             "min": 1,
             "max": 1
           }
@@ -1341,19 +1341,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.0125,
             "min": 1,
             "max": 1
           }
@@ -1375,19 +1375,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.275,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.1375,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.01375,
             "min": 1,
             "max": 1
           }
@@ -1409,19 +1409,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.3,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.15,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.015,
             "min": 1,
             "max": 1
           }
@@ -1443,19 +1443,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.325,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.1625,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.01625,
             "min": 1,
             "max": 1
           }
@@ -1477,19 +1477,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.35,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.175,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.0175,
             "min": 1,
             "max": 1
           }
@@ -1511,19 +1511,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.4,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.2,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.02,
             "min": 1,
             "max": 1
           }
@@ -1545,19 +1545,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.5,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.025,
             "min": 1,
             "max": 1
           }
@@ -1579,19 +1579,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.625,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.3125,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.03125,
             "min": 1,
             "max": 1
           }
@@ -1613,19 +1613,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 0.875,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.4375,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.04375,
             "min": 1,
             "max": 1
           }
@@ -1647,19 +1647,19 @@
           },
           {
             "id": "weeds",
-            "chance": 0.2,
+            "chance": 1.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "caterpillar",
-            "chance": 0.1,
+            "chance": 0.5625,
             "min": 1,
             "max": 1
           },
           {
             "id": "herb-pouch",
-            "chance": 0.01,
+            "chance": 0.05625,
             "min": 1,
             "max": 1
           }
@@ -1724,19 +1724,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.225,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.1125,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.01125,
             "min": 1,
             "max": 1
           }
@@ -1758,19 +1758,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.0125,
             "min": 1,
             "max": 1
           }
@@ -1792,19 +1792,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.275,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.1375,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.01375,
             "min": 1,
             "max": 1
           }
@@ -1826,19 +1826,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.3,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.15,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.015,
             "min": 1,
             "max": 1
           }
@@ -1860,19 +1860,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.325,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.1625,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.01625,
             "min": 1,
             "max": 1
           }
@@ -1894,19 +1894,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.35,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.175,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.0175,
             "min": 1,
             "max": 1
           }
@@ -1928,19 +1928,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.4,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.2,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.02,
             "min": 1,
             "max": 1
           }
@@ -1962,19 +1962,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.5,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.025,
             "min": 1,
             "max": 1
           }
@@ -1996,19 +1996,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.625,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.3125,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.03125,
             "min": 1,
             "max": 1
           }
@@ -2030,19 +2030,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 0.875,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.4375,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.04375,
             "min": 1,
             "max": 1
           }
@@ -2064,19 +2064,19 @@
           },
           {
             "id": "trash",
-            "chance": 0.2,
+            "chance": 1.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "seaweed",
-            "chance": 0.1,
+            "chance": 0.5625,
             "min": 1,
             "max": 1
           },
           {
             "id": "treasure-chest",
-            "chance": 0.01,
+            "chance": 0.05625,
             "min": 1,
             "max": 1
           }
@@ -2141,19 +2141,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.225,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.1125,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.01125,
             "min": 1,
             "max": 1
           }
@@ -2175,19 +2175,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.0125,
             "min": 1,
             "max": 1
           }
@@ -2209,19 +2209,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.275,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.1375,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.01375,
             "min": 1,
             "max": 1
           }
@@ -2243,19 +2243,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.3,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.15,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.015,
             "min": 1,
             "max": 1
           }
@@ -2277,19 +2277,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.325,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.1625,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.01625,
             "min": 1,
             "max": 1
           }
@@ -2311,19 +2311,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.35,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.175,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.0175,
             "min": 1,
             "max": 1
           }
@@ -2345,19 +2345,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.4,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.2,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.02,
             "min": 1,
             "max": 1
           }
@@ -2379,19 +2379,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.5,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.25,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.025,
             "min": 1,
             "max": 1
           }
@@ -2413,19 +2413,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.625,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.3125,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.03125,
             "min": 1,
             "max": 1
           }
@@ -2447,19 +2447,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 0.875,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.4375,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.04375,
             "min": 1,
             "max": 1
           }
@@ -2481,19 +2481,19 @@
           },
           {
             "id": "dirt",
-            "chance": 0.2,
+            "chance": 1.125,
             "min": 1,
             "max": 1
           },
           {
             "id": "relic",
-            "chance": 0.1,
+            "chance": 0.5625,
             "min": 1,
             "max": 1
           },
           {
             "id": "crate",
-            "chance": 0.01,
+            "chance": 0.05625,
             "min": 1,
             "max": 1
           }
