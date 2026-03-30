@@ -5,6 +5,7 @@ import { RouterLink, RouterView, useRoute } from 'vue-router'
 
 import SteamIcon from '@/components/icons/SteamIcon.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
+import meta from '@/data/meta.json'
 import { cn } from '@/lib/utils'
 
 const route = useRoute()
@@ -44,9 +45,16 @@ function isActive(path: string) {
             >
               Koltera 2
               <span
+                v-if="meta.gameVersion === meta.latestGameVersion"
                 class="rounded-full bg-primary px-1.5 py-0.5 text-[0.625rem] font-semibold leading-none text-primary-foreground"
                 title="Content is based on this game version"
-                >v3.0</span
+                >v{{ meta.gameVersion }}</span
+              >
+              <span
+                v-else
+                class="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[0.625rem] font-semibold leading-none text-amber-400"
+                title="Wiki update in progress"
+                >v{{ meta.gameVersion }} · game is v{{ meta.latestGameVersion }}</span
               >
             </span>
             <span class="block text-lg font-extrabold text-foreground">Wiki</span>
