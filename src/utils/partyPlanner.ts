@@ -758,6 +758,9 @@ export function planPartyLevelingPath(
     const expedition = expeditionMap.get(expeditionId)
     if (!expedition) return []
 
+    // Optimal: use precomputed top-N to narrow the sort pool (reduces evals
+    // from N creatures down to top-N matches). Hands-free: keep rating-based
+    // sort + cap to preserve scoring quality for amortized XP calculations.
     const MAX_EVAL = strategy === 'optimal' ? 10 : 12
     let evalIds: string[]
 
@@ -766,6 +769,7 @@ export function planPartyLevelingPath(
         const tops = getTopExpeditions(creatureId, state.creatures[creatureId].level)
         if (tops?.has(expeditionId)) return true
 
+        // Also consider creatures near a transition point (within 5 levels)
         const transitions = getLevelTransitions(creatureId)
         const level = state.creatures[creatureId].level
         return transitions.some((t) => t > level && t <= level + 5)
