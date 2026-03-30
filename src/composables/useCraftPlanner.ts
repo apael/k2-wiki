@@ -21,7 +21,7 @@ import type {
   PlannerTimeBreakdown,
   ScheduledTask,
 } from '@/types'
-import { formatDuration, methodKindLabel, toTitleCase } from '@/utils/format'
+import { formatChance, formatDuration, methodKindLabel, toTitleCase } from '@/utils/format'
 
 export type { GardenFlowerEntry, AwakenGatherUpgrade }
 
@@ -278,7 +278,7 @@ function buildPlannerGraph(
         source.duration * (1 - awakenReduction) * (1 - jobReduction),
       )
       const localTimeSeconds = actionsNeeded * effectiveDuration
-      const isEstimated = source.chance < 1 || source.min !== source.max
+      const isEstimated = source.chance !== 1 || source.min !== source.max
       const method: PlannerMethod = {
         id: `${nodeId}#gather-${sourceIndex}`,
         nodeId,
@@ -294,7 +294,7 @@ function buildPlannerGraph(
           { label: 'Level', value: `Lv${source.levelRequirement}` },
           {
             label: 'Yield / action',
-            value: `${(source.chance * 100).toFixed(source.chance < 0.01 ? 2 : 1)}% × ${formatAmount(expectedAmount(source.min, source.max))}`,
+            value: `${formatChance(source.chance)} × ${formatAmount(expectedAmount(source.min, source.max))}`,
           },
           ...(yieldBonus > 0 ? [{ label: 'Yield Bonus', value: `+${yieldBonus}` }] : []),
           ...((awakenGather?.durationTier ?? 0) > 0
@@ -311,7 +311,7 @@ function buildPlannerGraph(
           { label: 'Actions', value: formatAmount(actionsNeeded), estimated: isEstimated },
           { label: 'Step time', value: formatDuration(localTimeSeconds), estimated: isEstimated },
         ],
-        formula: `${formatAmount(requiredAmount)} ÷ (${(source.chance * 100).toFixed(source.chance < 0.01 ? 2 : 1)}% × ${formatAmount(expectedAmount(source.min, source.max))}) actions × ${formatDuration(source.duration)}`,
+        formula: `${formatAmount(requiredAmount)} ÷ (${formatChance(source.chance)} × ${formatAmount(expectedAmount(source.min, source.max))}) actions × ${formatDuration(source.duration)}`,
         notes: ['Expected time uses average yield from chance and output range.'],
         children: [],
       }
@@ -401,7 +401,7 @@ function buildPlannerGraph(
         ? (methodsById.get(childMethodId)?.totalTimeSeconds ?? null)
         : null
       const totalTimeSeconds = childTime
-      const isContainerEstimated = source.chance < 1
+      const isContainerEstimated = source.chance !== 1
       const method: PlannerMethod = {
         id: `${nodeId}#container-${sourceIndex}`,
         nodeId,
@@ -415,7 +415,7 @@ function buildPlannerGraph(
         detailRows: [
           {
             label: 'Yield / open',
-            value: `${(source.chance * 100).toFixed(source.chance < 0.01 ? 2 : 1)}% × ${source.amount}`,
+            value: `${formatChance(source.chance)} × ${source.amount}`,
           },
           {
             label: 'Containers needed',
@@ -428,7 +428,7 @@ function buildPlannerGraph(
             estimated: isContainerEstimated,
           },
         ],
-        formula: `${formatAmount(requiredAmount)} ÷ (${(source.chance * 100).toFixed(source.chance < 0.01 ? 2 : 1)}% × ${source.amount}) per ${source.containerName.toLowerCase()} opening`,
+        formula: `${formatAmount(requiredAmount)} ÷ (${formatChance(source.chance)} × ${source.amount}) per ${source.containerName.toLowerCase()} opening`,
         notes: [
           'Opening time is treated as negligible; only obtaining the container contributes time.',
         ],

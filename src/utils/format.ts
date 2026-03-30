@@ -85,6 +85,15 @@ export function methodKindColor(kind: PlannerMethodKind): string {
   return 'hsl(var(--muted-foreground))'
 }
 
+export function formatChance(chance: number): string {
+  if (chance === 1) return '100%'
+  if (chance > 1) {
+    const extra = chance - 1
+    return `2x ${(extra * 100).toFixed(extra < 0.01 ? 2 : 1)}%`
+  }
+  return `${(chance * 100).toFixed(chance < 0.01 ? 2 : 1)}%`
+}
+
 export function toTitleCase(str: string): string {
   const normalized = str.trim().replace(/[_-]+/g, ' ')
   if (!normalized) return ''
