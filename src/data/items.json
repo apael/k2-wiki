@@ -3,7 +3,7 @@
     "id": "chopping-charm",
     "name": "Chopping Charm",
     "type": "Currency",
-    "sources": ["chopping", "pouch", "charm-crate"],
+    "sources": ["pouch", "charm-crate"],
     "description": "Found while Chopping.",
     "recipes": []
   },
@@ -14,7 +14,6 @@
     "sources": ["chopping", "backpack"],
     "description": "A small pouch, likely left behind by someone. I wonder what it contains... Found while Chopping.",
     "recipes": [],
-    "buyValue": 3000,
     "lootTable": [
       {
         "id": "chopping-charm",
@@ -41,7 +40,8 @@
         "amount": 5,
         "chance": 0.05
       }
-    ]
+    ],
+    "buyValue": 3000
   },
   {
     "id": "health-potion",
@@ -167,7 +167,7 @@
     "id": "mining-charm",
     "name": "Mining Charm",
     "type": "Currency",
-    "sources": ["mining", "crate", "charm-crate"],
+    "sources": ["crate", "charm-crate"],
     "description": "Found while Mining.",
     "recipes": []
   },
@@ -178,7 +178,6 @@
     "sources": ["mining"],
     "description": "A small crate, likely left behind from some operation. I wonder what it contains... Found while Mining.",
     "recipes": [],
-    "buyValue": 3000,
     "lootTable": [
       {
         "id": "mining-charm",
@@ -205,13 +204,14 @@
         "amount": 5,
         "chance": 0.25
       }
-    ]
+    ],
+    "buyValue": 3000
   },
   {
     "id": "stone",
     "name": "Stone",
     "type": "Gathered",
-    "sources": ["mining"],
+    "sources": ["digging", "mining"],
     "description": "Found while Mining.",
     "recipes": []
   },
@@ -235,7 +235,7 @@
     "id": "coal",
     "name": "Coal",
     "type": "Gathered",
-    "sources": ["mining"],
+    "sources": ["mining", "crafting_furnace"],
     "description": "Found while Mining.",
     "recipes": [
       {
@@ -425,7 +425,7 @@
     "id": "digging-charm",
     "name": "Digging Charm",
     "type": "Currency",
-    "sources": ["digging", "burried-chest", "charm-crate"],
+    "sources": ["burried-chest", "charm-crate"],
     "description": "Found while Digging.",
     "recipes": []
   },
@@ -436,7 +436,6 @@
     "sources": ["digging"],
     "description": "A small chest, likely left behind by someone. I wonder what it contains... Found while Digging.",
     "recipes": [],
-    "buyValue": 3000,
     "lootTable": [
       {
         "id": "digging-charm",
@@ -463,13 +462,15 @@
         "amount": 1,
         "chance": 0.03
       }
-    ]
+    ],
+    "buyValue": 3000,
+    "image": "treasure-chest.png"
   },
   {
     "id": "ruby",
     "name": "Ruby",
     "type": "Sellable",
-    "sources": ["exploring", "burried-chest"],
+    "sources": ["burried-chest"],
     "description": "Found while Exploring.",
     "recipes": [],
     "sellValue": 25
@@ -478,7 +479,7 @@
     "id": "emerald",
     "name": "Emerald",
     "type": "Sellable",
-    "sources": ["exploring", "burried-chest"],
+    "sources": ["burried-chest"],
     "description": "Found while Exploring.",
     "recipes": [],
     "sellValue": 25
@@ -487,7 +488,7 @@
     "id": "sapphire",
     "name": "Sapphire",
     "type": "Sellable",
-    "sources": ["exploring", "burried-chest"],
+    "sources": ["burried-chest"],
     "description": "Found while Exploring.",
     "recipes": [],
     "sellValue": 25
@@ -586,7 +587,8 @@
     "type": "Gathered",
     "sources": ["digging"],
     "description": "Found while Digging.",
-    "recipes": []
+    "recipes": [],
+    "image": "echo-dust.png"
   },
   {
     "id": "obsidian",
@@ -600,9 +602,10 @@
     "id": "exploring-charm",
     "name": "Exploring Charm",
     "type": "Currency",
-    "sources": ["exploring", "backpack", "charm-crate"],
+    "sources": ["backpack", "charm-crate"],
     "description": "Found while Exploring.",
-    "recipes": []
+    "recipes": [],
+    "image": "exploration-charm.png"
   },
   {
     "id": "backpack",
@@ -611,7 +614,6 @@
     "sources": ["exploring"],
     "description": "A small backpack, likely left behind by someone. I wonder what it contains... Found while Exploring.",
     "recipes": [],
-    "buyValue": 3000,
     "lootTable": [
       {
         "id": "exploring-charm",
@@ -638,7 +640,8 @@
         "amount": 1,
         "chance": 0.05
       }
-    ]
+    ],
+    "buyValue": 3000
   },
   {
     "id": "berry",
@@ -662,7 +665,8 @@
     "type": "Gathered",
     "sources": ["exploring"],
     "description": "Found while Exploring.",
-    "recipes": []
+    "recipes": [],
+    "image": "shells.png"
   },
   {
     "id": "reed",
@@ -748,7 +752,7 @@
     "id": "snow",
     "name": "Snow",
     "type": "Gathered",
-    "sources": ["digging"],
+    "sources": ["exploring"],
     "description": "Found while Digging.",
     "recipes": []
   },
@@ -756,7 +760,7 @@
     "id": "fishing-charm",
     "name": "Fishing Charm",
     "type": "Currency",
-    "sources": ["fishing", "treasure-chest", "charm-crate"],
+    "sources": ["treasure-chest", "charm-crate"],
     "description": "Found while Fishing.",
     "recipes": []
   },
@@ -767,7 +771,6 @@
     "sources": ["fishing"],
     "description": "A small chest, likely left behind by someone. I wonder what it contains... Found while Fishing.",
     "recipes": [],
-    "buyValue": 3000,
     "lootTable": [
       {
         "id": "fishing-charm",
@@ -794,13 +797,14 @@
         "amount": 5,
         "chance": 0.25
       }
-    ]
+    ],
+    "buyValue": 3000
   },
   {
     "id": "string",
     "name": "String",
     "type": "Gathered",
-    "sources": ["fishing", "treasure-chest"],
+    "sources": ["treasure-chest"],
     "description": "Found while Fishing.",
     "recipes": []
   },
@@ -808,7 +812,7 @@
     "id": "hook",
     "name": "Hook",
     "type": "Gathered",
-    "sources": ["fishing", "treasure-chest"],
+    "sources": ["treasure-chest"],
     "description": "Found while Fishing.",
     "recipes": []
   },
@@ -928,7 +932,7 @@
     "id": "farming-charm",
     "name": "Farming Charm",
     "type": "Currency",
-    "sources": ["farming", "herb-pouch", "charm-crate"],
+    "sources": ["herb-pouch", "charm-crate"],
     "description": "Found while Farming.",
     "recipes": []
   },
@@ -939,7 +943,6 @@
     "sources": ["farming"],
     "description": "A small pouch, likely left behind by someone. I wonder what it contains... Found while Farming.",
     "recipes": [],
-    "buyValue": 3000,
     "lootTable": [
       {
         "id": "farming-charm",
@@ -966,7 +969,9 @@
         "amount": 5,
         "chance": 0.25
       }
-    ]
+    ],
+    "buyValue": 3000,
+    "image": "pouch.png"
   },
   {
     "id": "weeds",
@@ -1084,7 +1089,7 @@
     "id": "basil",
     "name": "Basil",
     "type": "Gathered",
-    "sources": ["farming", "herb-pouch"],
+    "sources": ["herb-pouch"],
     "description": "Found while Farming.",
     "recipes": []
   },
@@ -1092,7 +1097,7 @@
     "id": "rosemary",
     "name": "Rosemary",
     "type": "Gathered",
-    "sources": ["farming", "herb-pouch"],
+    "sources": ["herb-pouch"],
     "description": "Found while Farming.",
     "recipes": []
   },
@@ -1100,7 +1105,7 @@
     "id": "thyme",
     "name": "Thyme",
     "type": "Gathered",
-    "sources": ["farming", "herb-pouch"],
+    "sources": ["herb-pouch"],
     "description": "Found while Farming.",
     "recipes": []
   },
@@ -1108,10 +1113,8 @@
     "id": "knife",
     "name": "Knife",
     "type": "Refined",
-    "sources": ["crafting_workbench", "crate"],
+    "sources": ["crate", "crafting_workbench"],
     "description": "Stabby looking tool, used in the Stove",
-    "buyValue": 50,
-    "sellValue": 5,
     "recipes": [
       {
         "workstation": "Workbench",
@@ -1130,15 +1133,16 @@
         "craftTime": 16,
         "experience": 16
       }
-    ]
+    ],
+    "buyValue": 50,
+    "sellValue": 5
   },
   {
     "id": "cooked-meat",
     "name": "Cooked Meat",
     "type": "Refined",
-    "sources": ["crafting_stove", "backpack"],
+    "sources": ["backpack", "crafting_stove"],
     "description": "Cooked meat from raw meat.",
-    "sellValue": 2,
     "recipes": [
       {
         "workstation": "Stove",
@@ -1161,7 +1165,8 @@
         "craftTime": 16,
         "experience": 8
       }
-    ]
+    ],
+    "sellValue": 2
   },
   {
     "id": "cooked-fish",
@@ -1169,11 +1174,10 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "Cooked fish from raw fish.",
-    "sellValue": 3,
     "recipes": [
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1194,7 +1198,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1215,7 +1219,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1236,7 +1240,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1257,7 +1261,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1278,7 +1282,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1299,7 +1303,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1320,7 +1324,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1341,7 +1345,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1362,7 +1366,7 @@
       },
       {
         "workstation": "Stove",
-        "levelRequirement": 10,
+        "levelRequirement": 5,
         "ingredients": [
           {
             "id": "coal",
@@ -1381,7 +1385,8 @@
         "craftTime": 8,
         "experience": 15
       }
-    ]
+    ],
+    "sellValue": 3
   },
   {
     "id": "spices",
@@ -1389,11 +1394,10 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A blend of herbs and spices.",
-    "sellValue": 110,
     "recipes": [
       {
         "workstation": "Stove",
-        "levelRequirement": 15,
+        "levelRequirement": 25,
         "ingredients": [
           {
             "id": "basil",
@@ -1418,9 +1422,10 @@
         ],
         "outputAmount": 1,
         "craftTime": 32,
-        "experience": 96
+        "experience": 48
       }
-    ]
+    ],
+    "sellValue": 110
   },
   {
     "id": "cooked-meat-chunks",
@@ -1428,11 +1433,10 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "Cut up meat into chunks",
-    "sellValue": 10,
     "recipes": [
       {
         "workstation": "Stove",
-        "levelRequirement": 20,
+        "levelRequirement": 10,
         "ingredients": [
           {
             "id": "cooked-meat",
@@ -1447,7 +1451,8 @@
         "craftTime": 32,
         "experience": 32
       }
-    ]
+    ],
+    "sellValue": 10
   },
   {
     "id": "cheese",
@@ -1455,11 +1460,10 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A block of cheese.",
-    "sellValue": 125,
     "recipes": [
       {
         "workstation": "Stove",
-        "levelRequirement": 25,
+        "levelRequirement": 15,
         "ingredients": [
           {
             "id": "milk",
@@ -1478,7 +1482,8 @@
         "craftTime": 64,
         "experience": 80
       }
-    ]
+    ],
+    "sellValue": 125
   },
   {
     "id": "meat-stew",
@@ -1486,11 +1491,10 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "Cooked meat from raw meat stew.",
-    "sellValue": 235,
     "recipes": [
       {
         "workstation": "Stove",
-        "levelRequirement": 35,
+        "levelRequirement": 90,
         "ingredients": [
           {
             "id": "cooked-meat-chunks",
@@ -1515,9 +1519,50 @@
         ],
         "outputAmount": 1,
         "craftTime": 256,
-        "experience": 768
+        "experience": 1536
       }
-    ]
+    ],
+    "sellValue": 235,
+    "image": "cooked-meat-stew.png"
+  },
+  {
+    "id": "fish-dinner",
+    "name": "Fish Dinner",
+    "type": "Refined",
+    "sources": ["crafting_stove"],
+    "description": "A delicious fish dish.",
+    "recipes": [
+      {
+        "workstation": "Stove",
+        "levelRequirement": 90,
+        "ingredients": [
+          {
+            "id": "cooked-fish",
+            "amount": 2
+          },
+          {
+            "id": "flour",
+            "amount": 2
+          },
+          {
+            "id": "spices",
+            "amount": 1
+          },
+          {
+            "id": "bowl",
+            "amount": 1
+          },
+          {
+            "id": "coal",
+            "amount": 1
+          }
+        ],
+        "outputAmount": 1,
+        "craftTime": 256,
+        "experience": 1536
+      }
+    ],
+    "sellValue": 235
   },
   {
     "id": "flour",
@@ -1525,11 +1570,10 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A bag of flour.",
-    "sellValue": 25,
     "recipes": [
       {
         "workstation": "Stove",
-        "levelRequirement": 5,
+        "levelRequirement": 20,
         "ingredients": [
           {
             "id": "wheat",
@@ -1541,50 +1585,51 @@
           },
           {
             "id": "leather",
-            "amount": 2
+            "amount": 1
           }
         ],
         "outputAmount": 1,
-        "craftTime": 128,
-        "experience": 208
+        "craftTime": 32,
+        "experience": 40
       }
-    ]
+    ],
+    "sellValue": 25
   },
   {
     "id": "milk",
     "name": "Milk",
     "type": "Refined",
-    "sources": ["merchant"],
-    "description": "There isn't cows in this world, so no one knows where it comes from. Used in the Stove workstation.",
-    "buyValue": 100,
-    "recipes": []
+    "sources": [],
+    "description": "A delightful nectar, straight from a cow. Used in the Stove workstation.",
+    "recipes": [],
+    "buyValue": 100
   },
   {
     "id": "egg",
     "name": "Egg",
     "type": "Refined",
-    "sources": ["merchant"],
+    "sources": [],
     "description": "A raw eggy. Used in the Stove workstation.",
-    "buyValue": 100,
-    "recipes": []
+    "recipes": [],
+    "buyValue": 100
   },
   {
     "id": "salt",
     "name": "Salt",
     "type": "Refined",
-    "sources": ["merchant"],
+    "sources": [],
     "description": "A very salty kind of salt. Used in the Stove workstation.",
-    "buyValue": 100,
-    "recipes": []
+    "recipes": [],
+    "buyValue": 100
   },
   {
     "id": "sugar",
     "name": "Sugar",
     "type": "Refined",
-    "sources": ["merchant"],
+    "sources": [],
     "description": "Addicting and tasty. Should be used in every recipe. Used in the Stove workstation.",
-    "buyValue": 100,
-    "recipes": []
+    "recipes": [],
+    "buyValue": 100
   },
   {
     "id": "cooked-crab",
@@ -1592,7 +1637,6 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "Cooked crab from raw crab.",
-    "sellValue": 25,
     "recipes": [
       {
         "workstation": "Stove",
@@ -1613,9 +1657,10 @@
         ],
         "outputAmount": 1,
         "craftTime": 32,
-        "experience": 96
+        "experience": 80
       }
-    ]
+    ],
+    "sellValue": 25
   },
   {
     "id": "veggie-mix",
@@ -1623,7 +1668,6 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A mix of vegetables.",
-    "sellValue": 15,
     "recipes": [
       {
         "workstation": "Stove",
@@ -1650,7 +1694,8 @@
         "craftTime": 32,
         "experience": 56
       }
-    ]
+    ],
+    "sellValue": 15
   },
   {
     "id": "bread",
@@ -1658,7 +1703,6 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A loaf of bread.",
-    "sellValue": 125,
     "recipes": [
       {
         "workstation": "Stove",
@@ -1685,7 +1729,8 @@
         "craftTime": 64,
         "experience": 128
       }
-    ]
+    ],
+    "sellValue": 125
   },
   {
     "id": "cheeseburger",
@@ -1693,11 +1738,10 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A cheeseburger.",
-    "sellValue": 380,
     "recipes": [
       {
         "workstation": "Stove",
-        "levelRequirement": 45,
+        "levelRequirement": 80,
         "ingredients": [
           {
             "id": "bread",
@@ -1722,9 +1766,10 @@
         ],
         "outputAmount": 1,
         "craftTime": 128,
-        "experience": 320
+        "experience": 512
       }
-    ]
+    ],
+    "sellValue": 380
   },
   {
     "id": "canned-food",
@@ -1732,7 +1777,6 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A can of food.",
-    "sellValue": 125,
     "recipes": [
       {
         "workstation": "Stove",
@@ -1757,7 +1801,7 @@
         ],
         "outputAmount": 1,
         "craftTime": 32,
-        "experience": 88
+        "experience": 72
       },
       {
         "workstation": "Stove",
@@ -1980,7 +2024,8 @@
         "craftTime": 90,
         "experience": 88
       }
-    ]
+    ],
+    "sellValue": 125
   },
   {
     "id": "carrot-cake",
@@ -1988,7 +2033,6 @@
     "type": "Refined",
     "sources": ["crafting_stove"],
     "description": "A carrot cake.",
-    "sellValue": 600,
     "recipes": [
       {
         "workstation": "Stove",
@@ -2017,18 +2061,18 @@
         ],
         "outputAmount": 1,
         "craftTime": 256,
-        "experience": 1792
+        "experience": 896
       }
-    ]
+    ],
+    "sellValue": 600,
+    "image": "cake.png"
   },
   {
     "id": "hammer",
     "name": "Hammer",
     "type": "Refined",
-    "sources": ["crafting_workbench", "crate"],
+    "sources": ["crate", "crafting_workbench"],
     "description": "Smashy looking tool, used in the Furnace",
-    "buyValue": 50,
-    "sellValue": 20,
     "recipes": [
       {
         "workstation": "Workbench",
@@ -2047,7 +2091,9 @@
         "craftTime": 16,
         "experience": 16
       }
-    ]
+    ],
+    "buyValue": 50,
+    "sellValue": 5
   },
   {
     "id": "copper-bar",
@@ -2055,7 +2101,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined copper bar smelted from copper ore and coal.",
-    "sellValue": 10,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2078,7 +2123,8 @@
         "craftTime": 60,
         "experience": 60
       }
-    ]
+    ],
+    "sellValue": 10
   },
   {
     "id": "tin-bar",
@@ -2086,7 +2132,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined tin bar smelted from tin ore and coal.",
-    "sellValue": 15,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2109,7 +2154,8 @@
         "craftTime": 60,
         "experience": 66
       }
-    ]
+    ],
+    "sellValue": 15
   },
   {
     "id": "iron-bar",
@@ -2117,7 +2163,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined iron bar smelted from iron ore and coal.",
-    "sellValue": 20,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2140,7 +2185,8 @@
         "craftTime": 60,
         "experience": 72
       }
-    ]
+    ],
+    "sellValue": 20
   },
   {
     "id": "silver-bar",
@@ -2148,7 +2194,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined silver bar smelted from silver ore and coal.",
-    "sellValue": 25,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2171,7 +2216,8 @@
         "craftTime": 60,
         "experience": 84
       }
-    ]
+    ],
+    "sellValue": 25
   },
   {
     "id": "gold-bar",
@@ -2179,7 +2225,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined gold bar smelted from gold ore and coal.",
-    "sellValue": 30,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2202,7 +2247,8 @@
         "craftTime": 60,
         "experience": 108
       }
-    ]
+    ],
+    "sellValue": 30
   },
   {
     "id": "platinum-bar",
@@ -2210,7 +2256,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined platinum bar smelted from platinum ore and coal.",
-    "sellValue": 40,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2233,7 +2278,8 @@
         "craftTime": 60,
         "experience": 144
       }
-    ]
+    ],
+    "sellValue": 40
   },
   {
     "id": "adamantite-bar",
@@ -2241,7 +2287,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined adamantite bar smelted from adamantite ore and coal.",
-    "sellValue": 60,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2264,7 +2309,8 @@
         "craftTime": 60,
         "experience": 192
       }
-    ]
+    ],
+    "sellValue": 60
   },
   {
     "id": "runic-bar",
@@ -2272,7 +2318,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined runic bar smelted from runic ore and coal.",
-    "sellValue": 80,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2295,7 +2340,8 @@
         "craftTime": 60,
         "experience": 252
       }
-    ]
+    ],
+    "sellValue": 80
   },
   {
     "id": "solarite-bar",
@@ -2303,7 +2349,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined solarite bar smelted from solarite ore and coal.",
-    "sellValue": 120,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2324,9 +2369,10 @@
         ],
         "outputAmount": 1,
         "craftTime": 60,
-        "experience": 316
+        "experience": 380
       }
-    ]
+    ],
+    "sellValue": 120
   },
   {
     "id": "arcanum-bar",
@@ -2334,7 +2380,6 @@
     "type": "Refined",
     "sources": ["crafting_furnace"],
     "description": "A refined arcanum bar smelted from arcanum ore and coal.",
-    "sellValue": 180,
     "recipes": [
       {
         "workstation": "Furnace",
@@ -2357,16 +2402,15 @@
         "craftTime": 60,
         "experience": 420
       }
-    ]
+    ],
+    "sellValue": 180
   },
   {
     "id": "saw",
     "name": "Saw",
     "type": "Refined",
-    "sources": ["crafting_workbench", "pouch", "crate"],
+    "sources": ["pouch", "crate", "crafting_workbench"],
     "description": "Toothy looking tool, used in the Workbench.",
-    "buyValue": 50,
-    "sellValue": 5,
     "recipes": [
       {
         "workstation": "Workbench",
@@ -2385,15 +2429,16 @@
         "craftTime": 16,
         "experience": 16
       }
-    ]
+    ],
+    "buyValue": 50,
+    "sellValue": 5
   },
   {
     "id": "planks",
     "name": "Planks",
     "type": "Refined",
-    "sources": ["crafting_workbench", "pouch"],
+    "sources": ["pouch", "crafting_workbench"],
     "description": "Beautifully handcrafted planks from the spoils of trees.",
-    "sellValue": 5,
     "recipes": [
       {
         "workstation": "Workbench",
@@ -2582,13 +2627,15 @@
         "craftTime": 32,
         "experience": 56
       }
-    ]
+    ],
+    "sellValue": 5,
+    "image": "plank.png"
   },
   {
     "id": "bucket",
     "name": "Bucket",
     "type": "Refined",
-    "sources": ["crafting_workbench", "treasure-chest"],
+    "sources": ["treasure-chest", "crafting_workbench"],
     "description": "A bigger looking bowl. Can be found fishing.",
     "recipes": [
       {
@@ -2619,7 +2666,7 @@
     "recipes": [
       {
         "workstation": "Workbench",
-        "levelRequirement": 30,
+        "levelRequirement": 25,
         "ingredients": [
           {
             "id": "planks",
@@ -2648,19 +2695,37 @@
         "levelRequirement": 20,
         "ingredients": [
           {
-            "id": "water-vial",
+            "id": "bucket",
             "amount": 1
           },
           {
-            "id": "bucket",
+            "id": "water-vial",
             "amount": 1
           }
         ],
         "outputAmount": 1,
         "craftTime": 16,
         "experience": 18
+      },
+      {
+        "workstation": "Workbench",
+        "levelRequirement": 20,
+        "ingredients": [
+          {
+            "id": "bucket",
+            "amount": 1
+          },
+          {
+            "id": "ice",
+            "amount": 8
+          }
+        ],
+        "outputAmount": 1,
+        "craftTime": 16,
+        "experience": 18
       }
-    ]
+    ],
+    "image": "bucket-of-water.png"
   },
   {
     "id": "leather",
@@ -2693,7 +2758,7 @@
     "recipes": [
       {
         "workstation": "Workbench",
-        "levelRequirement": 40,
+        "levelRequirement": 30,
         "ingredients": [
           {
             "id": "raw-earth-essence",
@@ -2702,7 +2767,7 @@
         ],
         "outputAmount": 1,
         "craftTime": 512,
-        "experience": 2560
+        "experience": 1536
       }
     ]
   },
@@ -2715,7 +2780,7 @@
     "recipes": [
       {
         "workstation": "Workbench",
-        "levelRequirement": 40,
+        "levelRequirement": 30,
         "ingredients": [
           {
             "id": "raw-fire-essence",
@@ -2724,7 +2789,7 @@
         ],
         "outputAmount": 1,
         "craftTime": 512,
-        "experience": 2560
+        "experience": 1536
       }
     ]
   },
@@ -2737,7 +2802,7 @@
     "recipes": [
       {
         "workstation": "Workbench",
-        "levelRequirement": 40,
+        "levelRequirement": 30,
         "ingredients": [
           {
             "id": "raw-water-essence",
@@ -2746,7 +2811,7 @@
         ],
         "outputAmount": 1,
         "craftTime": 512,
-        "experience": 2560
+        "experience": 1536
       }
     ]
   },
@@ -2759,7 +2824,7 @@
     "recipes": [
       {
         "workstation": "Workbench",
-        "levelRequirement": 40,
+        "levelRequirement": 30,
         "ingredients": [
           {
             "id": "raw-wind-essence",
@@ -2768,7 +2833,7 @@
         ],
         "outputAmount": 1,
         "craftTime": 512,
-        "experience": 2560
+        "experience": 1536
       }
     ]
   },
@@ -2776,7 +2841,7 @@
     "id": "helmet",
     "name": "Helmet",
     "type": "Refined",
-    "sources": ["crafting_workbench", "armor-crate"],
+    "sources": ["armor-crate", "crafting_workbench"],
     "description": "Metal helmet to protect your noggin",
     "recipes": [
       {
@@ -2955,7 +3020,7 @@
     "id": "chestplate",
     "name": "Chestplate",
     "type": "Refined",
-    "sources": ["crafting_workbench", "armor-crate"],
+    "sources": ["armor-crate", "crafting_workbench"],
     "description": "Metal chestplate to protect your body",
     "recipes": [
       {
@@ -3134,7 +3199,7 @@
     "id": "boots",
     "name": "Boots",
     "type": "Refined",
-    "sources": ["crafting_workbench", "armor-crate"],
+    "sources": ["armor-crate", "crafting_workbench"],
     "description": "Metal boots to protect your toes from stubbing",
     "recipes": [
       {
@@ -3313,12 +3378,12 @@
     "id": "armor-set",
     "name": "Armor Set",
     "type": "Refined",
-    "sources": ["crafting_workbench", "armor-crate"],
+    "sources": ["armor-crate", "crafting_workbench"],
     "description": "Everything you could need for a dungeon",
     "recipes": [
       {
         "workstation": "Workbench",
-        "levelRequirement": 55,
+        "levelRequirement": 50,
         "ingredients": [
           {
             "id": "helmet",
@@ -3351,8 +3416,9 @@
     "id": "armor-crate",
     "name": "Armor Crate",
     "type": "Container",
+    "sources": [],
     "description": "Armor Crate",
-    "buyValue": 10000,
+    "recipes": [],
     "lootTable": [
       {
         "id": "scrap-metal",
@@ -3380,14 +3446,15 @@
         "chance": 0.1
       }
     ],
-    "recipes": []
+    "buyValue": 10000
   },
   {
     "id": "charm-crate",
     "name": "Charm Crate",
     "type": "Container",
+    "sources": [],
     "description": "Charm Crate",
-    "buyValue": 7500,
+    "recipes": [],
     "lootTable": [
       {
         "id": "chopping-charm",
@@ -3420,12 +3487,13 @@
         "chance": 0.25
       }
     ],
-    "recipes": []
+    "buyValue": 7500
   },
   {
     "id": "dungeon-key",
     "name": "Dungeon Key",
     "type": "Refined",
+    "sources": [],
     "description": "A key used to unlock a dungeon.",
     "recipes": []
   },
@@ -3446,7 +3514,7 @@
           },
           {
             "id": "stone",
-            "amount": 1024
+            "amount": 128
           }
         ],
         "outputAmount": 1,
@@ -3472,7 +3540,7 @@
           },
           {
             "id": "stone",
-            "amount": 1024
+            "amount": 128
           }
         ],
         "outputAmount": 1,
@@ -3498,7 +3566,7 @@
           },
           {
             "id": "stone",
-            "amount": 1024
+            "amount": 128
           }
         ],
         "outputAmount": 1,
@@ -3524,7 +3592,7 @@
           },
           {
             "id": "stone",
-            "amount": 1024
+            "amount": 128
           }
         ],
         "outputAmount": 1,
@@ -3546,9 +3614,11 @@
     "id": "braymens-letter",
     "name": "Braymen's Letter",
     "type": "Gathered",
+    "sources": [],
     "description": "You are probably wondering how this got in here... A magician never reveals their secrets! Nevertheless, thank you for joining Koltera. I appreciate your support and if you need any help, feel free to jump in the discord (found in the navigation)! Oh, and you should probably sell this letter... I think you will need all the gold you can get.",
+    "recipes": [],
     "sellValue": 5000,
-    "recipes": []
+    "image": "mail.png"
   },
   {
     "id": "gold",
@@ -3562,20 +3632,32 @@
     "id": "awaken-points",
     "name": "Awaken Points",
     "type": "Currency",
+    "sources": [],
     "description": "Description to be written...",
     "recipes": []
   },
   {
     "id": "prestige-points",
-    "name": "Prestige Points",
+    "name": "Awaken Points",
     "type": "Currency",
+    "sources": [],
     "description": "Description to be written...",
     "recipes": []
+  },
+  {
+    "id": "Dirt Credits",
+    "name": "Dirt Credits",
+    "type": "Currency",
+    "sources": [],
+    "description": "Description to be written...",
+    "recipes": [],
+    "image": "dirt-credits.png"
   },
   {
     "id": "fire-flower",
     "name": "Fire Flower",
     "type": "Gathered",
+    "sources": [],
     "description": "Plant in the garden to grow fire essence.",
     "recipes": [],
     "buyValue": 2500
@@ -3584,6 +3666,7 @@
     "id": "wind-flower",
     "name": "Wind Flower",
     "type": "Gathered",
+    "sources": [],
     "description": "Plant in the garden to grow wind essence.",
     "recipes": [],
     "buyValue": 2500
@@ -3592,6 +3675,7 @@
     "id": "earth-flower",
     "name": "Earth Flower",
     "type": "Gathered",
+    "sources": [],
     "description": "Plant in the garden to grow earth essence.",
     "recipes": [],
     "buyValue": 2500
@@ -3600,6 +3684,7 @@
     "id": "water-flower",
     "name": "Water Flower",
     "type": "Gathered",
+    "sources": [],
     "description": "Plant in the garden to grow water essence.",
     "recipes": [],
     "buyValue": 2500
@@ -3608,6 +3693,7 @@
     "id": "gold-flower",
     "name": "Gold Flower",
     "type": "Gathered",
+    "sources": [],
     "description": "They say money doesn't grow on trees, but these flowers sure make some! Plant it in the garden to grow gold.",
     "recipes": [],
     "buyValue": 2500
@@ -3625,47 +3711,57 @@
     "id": "raw-fire-essence",
     "name": "Raw Fire Essence",
     "type": "Gathered",
+    "sources": [],
     "description": "Description to be written...",
-    "recipes": []
+    "recipes": [],
+    "image": "fire-essence.png"
   },
   {
     "id": "raw-wind-essence",
     "name": "Raw Wind Essence",
     "type": "Gathered",
+    "sources": [],
     "description": "Description to be written...",
-    "recipes": []
+    "recipes": [],
+    "image": "wind-essence.png"
   },
   {
     "id": "raw-earth-essence",
     "name": "Raw Earth Essence",
     "type": "Gathered",
+    "sources": [],
     "description": "Description to be written...",
-    "recipes": []
+    "recipes": [],
+    "image": "earth-essence.png"
   },
   {
     "id": "raw-water-essence",
     "name": "Raw Water Essence",
     "type": "Gathered",
+    "sources": [],
     "description": "Description to be written...",
-    "recipes": []
+    "recipes": [],
+    "image": "water-essence.png"
   },
   {
     "id": "task-board-reset-potion",
     "name": "Task Board Potion",
     "type": "Consumable",
-    "buyValue": 40000,
+    "sources": [],
     "description": "A potion that allows you to reset every task board quest instantly. Can be bought at the Merchant.",
     "recipes": [],
-    "weeklyLimit": 7
+    "buyValue": 40000,
+    "image": "task-board-potion.png"
   },
   {
     "id": "awaken-tree-reset-potion",
     "name": "Awaken Tree Potion",
     "type": "Consumable",
-    "buyValue": 250000,
-    "weeklyLimit": 1,
+    "sources": [],
     "description": "A potion that resets the Awaken Tree, refunding all spent Awaken Points. Can be bought at the Merchant.",
-    "recipes": []
+    "recipes": [],
+    "buyValue": 250000,
+    "image": "awaken-potion.png"
   },
   {
     "id": "knowledge-orb",
@@ -3673,8 +3769,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-1"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "web",
@@ -3682,8 +3778,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-2"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "water-vial",
@@ -3691,8 +3787,9 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-3"],
     "description": "Found while completing expeditions.",
+    "recipes": [],
     "sellValue": 15,
-    "recipes": []
+    "image": "water-vials.png"
   },
   {
     "id": "gemstone",
@@ -3700,8 +3797,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-4"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "kelp",
@@ -3709,8 +3806,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-5"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "cloth",
@@ -3718,8 +3815,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-6"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "night-shard",
@@ -3727,17 +3824,17 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-7"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "scrap-metal",
     "name": "Scrap Metal",
     "type": "Gathered",
-    "sources": ["completing expeditions", "armor-crate", "expedition_expedition-type-8"],
+    "sources": ["armor-crate", "completing expeditions", "expedition_expedition-type-8"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "pearl",
@@ -3745,27 +3842,26 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-9"],
     "description": "Found while completing expeditions.",
-    "sellValue": 50,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 30
   },
   {
     "id": "empty-can",
     "name": "Empty Can",
     "type": "Refined",
-    "sources": ["crafting_furnace", "completing expeditions", "expedition_expedition-type-10"],
+    "sources": ["completing expeditions", "expedition_expedition-type-10", "crafting_workbench"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
     "recipes": [
       {
-        "workstation": "Furnace",
-        "levelRequirement": 65,
+        "workstation": "Workbench",
+        "levelRequirement": 35,
         "ingredients": [
           {
             "id": "scrap-metal",
             "amount": 2
           },
           {
-            "id": "hammer",
+            "id": "saw",
             "amount": 1
           }
         ],
@@ -3773,7 +3869,8 @@
         "craftTime": 8,
         "experience": 24
       }
-    ]
+    ],
+    "sellValue": 15
   },
   {
     "id": "dungeon-core",
@@ -3781,8 +3878,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-11"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "box-of-fish",
@@ -3790,8 +3887,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-12"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "scale",
@@ -3799,8 +3896,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-13"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "ancient-tome",
@@ -3808,8 +3905,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-14"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "poison-vial",
@@ -3817,8 +3914,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-15"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "coral",
@@ -3826,8 +3923,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-16"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "night-feather",
@@ -3835,8 +3932,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-17"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "artifact",
@@ -3844,8 +3941,8 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-18"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "skull",
@@ -3853,17 +3950,17 @@
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-19"],
     "description": "Found while completing expeditions.",
-    "sellValue": 15,
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "blood-vial",
     "name": "Blood Vial",
     "type": "Gathered",
     "sources": ["completing expeditions", "expedition_expedition-type-20"],
-    "sellValue": 15,
     "description": "Found while completing expeditions.",
-    "recipes": []
+    "recipes": [],
+    "sellValue": 15
   },
   {
     "id": "dungeon-rune",
@@ -3874,7 +3971,7 @@
     "recipes": [
       {
         "workstation": "Workbench",
-        "levelRequirement": 40,
+        "levelRequirement": 60,
         "ingredients": [
           {
             "id": "dungeon-dust",
@@ -3899,6 +3996,7 @@
     "id": "water-rune",
     "name": "Water Rune",
     "type": "Gathered",
+    "sources": [],
     "description": "A powerful rune extracted from the depths of dungeons.",
     "recipes": []
   },
@@ -3906,6 +4004,7 @@
     "id": "earth-rune",
     "name": "Earth Rune",
     "type": "Gathered",
+    "sources": [],
     "description": "A powerful rune extracted from the depths of dungeons.",
     "recipes": []
   },
@@ -3913,6 +4012,7 @@
     "id": "fire-rune",
     "name": "Fire Rune",
     "type": "Gathered",
+    "sources": [],
     "description": "A powerful rune extracted from the depths of dungeons.",
     "recipes": []
   },
@@ -3920,6 +4020,7 @@
     "id": "wind-rune",
     "name": "Wind Rune",
     "type": "Gathered",
+    "sources": [],
     "description": "A powerful rune extracted from the depths of dungeons.",
     "recipes": []
   },

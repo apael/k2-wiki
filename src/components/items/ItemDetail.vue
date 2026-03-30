@@ -7,7 +7,7 @@ import expeditionsData from '@/data/expeditions.json'
 import { summoningIndex } from '@/data/indexes'
 import type { Item } from '@/types'
 import { getCreatureImage } from '@/utils/creatureImages'
-import { itemTypeColor, toTitleCase, formatDuration } from '@/utils/format'
+import { itemTypeColor, toTitleCase, formatDuration, formatChance } from '@/utils/format'
 import { sourceIcons } from '@/utils/icons'
 import { getItemImage } from '@/utils/itemImages'
 
@@ -177,12 +177,6 @@ const expandedVariants = ref<Set<number>>(new Set())
 function toggleVariants(recipeIdx: number) {
   if (expandedVariants.value.has(recipeIdx)) expandedVariants.value.delete(recipeIdx)
   else expandedVariants.value.add(recipeIdx)
-}
-
-
-function formatChance(chance: number): string {
-  if (chance === 1) return '100%'
-  return `${(chance * 100).toFixed(chance < 0.01 ? 2 : 1)}%`
 }
 
 

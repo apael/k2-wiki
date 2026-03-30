@@ -94,7 +94,7 @@ export interface Item {
   type: ItemType
   sources: string[]
   description: string
-  image: string
+  image?: string
   recipes: ItemRecipe[]
   lootTable?: LootTableEntry[]
   buyValue?: number
