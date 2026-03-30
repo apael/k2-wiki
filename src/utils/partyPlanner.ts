@@ -583,9 +583,6 @@ export function planPartyLevelingPath(
     const unfinishedIds = availableIds.filter(
       (creatureId) => !isCreatureFinished(state.creatures[creatureId]),
     )
-    const boosterIds = availableIds.filter((creatureId) =>
-      isCreatureFinished(state.creatures[creatureId]),
-    )
     const seedGroups: { expeditionId: string; candidates: RunCandidate[] }[] = []
 
     currentExpeditionsConsidered = 0
@@ -701,7 +698,7 @@ export function planPartyLevelingPath(
 
     const variants = seedAssignments
       .map((assignment) =>
-        fillWaveVariant(state, assignment.selected, unfinishedIds, boosterIds, bestCompleteState),
+        fillWaveVariant(state, assignment.selected, unfinishedIds, bestCompleteState),
       )
       .filter((variant) => variant.length > 0 || state.activeRuns.length > 0)
 
@@ -797,22 +794,46 @@ export function planPartyLevelingPath(
 
     if (evalIds.length === 0) return []
 
-    return evalIds
-      .map((creatureId) => buildBestCandidateForMembers(state, expedition, [creatureId]))
-      .filter((candidate): candidate is RunCandidate => candidate !== null)
-      .toSorted((a, b) => {
-        if (b.priorityScore !== a.priorityScore) return b.priorityScore - a.priorityScore
-        if (b.usefulXpPerSecond !== a.usefulXpPerSecond)
-          return b.usefulXpPerSecond - a.usefulXpPerSecond
-        return a.duration - b.duration
-      })
+    const availableBoosters = availableCreatureIds(state)
+      .filter((id) => isCreatureFinished(state.creatures[id]))
+      .toSorted(
+        (a, b) =>
+          getCreatureRating(b, expeditionId, state.creatures[b].level) -
+          getCreatureRating(a, expeditionId, state.creatures[a].level),
+      )
+
+    const results: RunCandidate[] = []
+    const usedBoosterIds = new Set<string>()
+
+    for (const creatureId of evalIds) {
+      const solo = buildBestCandidateForMembers(state, expedition, [creatureId])
+      if (solo) results.push(solo)
+
+      for (const boosterId of availableBoosters) {
+        if (usedBoosterIds.has(boosterId)) continue
+
+        const paired = buildBestCandidateForMembers(state, expedition, [creatureId, boosterId])
+
+        if (paired) {
+          results.push(paired)
+          usedBoosterIds.add(boosterId)
+          break
+        }
+      }
+    }
+
+    return results.toSorted((a, b) => {
+      if (b.priorityScore !== a.priorityScore) return b.priorityScore - a.priorityScore
+      if (b.usefulXpPerSecond !== a.usefulXpPerSecond)
+        return b.usefulXpPerSecond - a.usefulXpPerSecond
+      return a.duration - b.duration
+    })
   }
 
   function fillWaveVariant(
     state: SearchState,
     seeds: RunCandidate[],
     unfinishedIds: string[],
-    boosterIds: string[],
     bestCompleteState: SearchState | null,
   ): RunCandidate[] {
     const parties = new Map(seeds.map((seed) => [seed.expeditionId, seed]))
@@ -820,9 +841,8 @@ export function planPartyLevelingPath(
     const remainingLevelers = unfinishedIds.filter(
       (creatureId) => !assignedLevelers.has(creatureId),
     )
-    const remainingBoosters = [...boosterIds]
 
-    function fillCreatures(remaining: string[], requirePositiveGain: boolean) {
+    function fillCreatures(remaining: string[]) {
       while (remaining.length > 0) {
         let bestFill: {
           expeditionId: string
@@ -843,13 +863,17 @@ export function planPartyLevelingPath(
             if (!candidate) continue
 
             const gain = candidate.usefulXpPerSecond - current.usefulXpPerSecond
-            if (requirePositiveGain && gain <= 0) continue
             if (
               !bestFill ||
               gain > bestFill.gain ||
               (gain === bestFill.gain && isBetterCandidate(candidate, bestFill.candidate, strategy))
             ) {
-              bestFill = { expeditionId: expedition.id, creatureId, candidate, gain }
+              bestFill = {
+                expeditionId: expedition.id,
+                creatureId,
+                candidate,
+                gain,
+              }
             }
             currentWaveVariantsEvaluated += 1
           }
@@ -862,9 +886,7 @@ export function planPartyLevelingPath(
       }
     }
 
-    fillCreatures(remainingLevelers, false)
-    fillCreatures(remainingBoosters, true)
-
+    fillCreatures(remainingLevelers)
     return [...parties.values()].toSorted((a, b) => a.expeditionId.localeCompare(b.expeditionId))
   }
 
